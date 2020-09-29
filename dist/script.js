@@ -1,4 +1,4 @@
-console.log("update 19 nomar");
+console.log("update 20 nomar");
 
 (function ($, window, document, undefined) {
 
@@ -145,13 +145,13 @@ console.log("update 19 nomar");
         var filtersObject = [];
 
         objprov1.type = "EMAIL";
-        objprov1.campaignId = 68;
-        objprov1.template_name = "Provider_Appt_Info_EMAIL"; // TODO: Change template name
+        objprov1.campaignId = 0;
+        objprov1.template_name = "";
         objprov1.msg_parameters = [];
 
         objprov2.type = "SMS";
-        objprov2.campaignId = 68;
-        objprov2.template_name = "Provider_Appt_Info_SMS"; // TODO: Change template name
+        objprov2.campaignId = 0;
+        objprov2.template_name = "";
         objprov2.msg_parameters = [];
 
         filtersObject.push(objprov1);
@@ -285,6 +285,7 @@ console.log("update 19 nomar");
 
                 if (window.parent.$('iframe[id=' + activeTier1IframeIds + ']').contents().find("span:contains('None of the cases found are related to the current inquiry')").length > 0) {
                     householdIdGpp = window.parent.$('iframe[id=' + activeTier1IframeIds + ']')[0].contentWindow.getAttributeValue("pyWorkPage", "MemberID");
+                    member_dataSession = JSON.parse(window.parent.sessionStorage.getItem("member_info"));
                 }
             }, 2000)
 
