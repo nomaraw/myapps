@@ -1,4 +1,4 @@
-console.log("update 17 nomar");
+console.log("update 18 nomar");
 
 (function ($, window, document, undefined) {
 
@@ -281,8 +281,8 @@ window.parent.openGPP = function() {
         function addEzcommCoreLauncherGPPPayment() {
             if (window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("span:contains('None of the cases found are related to the current inquiry')").length > 0 &&
                 window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("#gpppaymentheader").length === 0) {
-                     $('#RULE_KEY > div:nth-child(1) > div > div > div > div > p').append('<div style="margin-bottom:10px" onclick="window.parent.openGPP()"><button type="button" id="gpppaymentheader"><div class="pzbtn-rnd" ><div class="pzbtn-lft"><div class="pzbtn-rgt" ><div class="pzbtn-mid" ><img src="webwb/zblankimage.gif" alt="" class="pzbtn-i">EZComm</div></div></div></div></button></div>');
-            }    
+                    $('#RULE_KEY > div:nth-child(1) > div > div > div > div > p').append('<button style="margin-bottom:10px" onclick="window.parent.openGPP()" type="button" id="gpppaymentheader"><div class="pzbtn-rnd" ><div class="pzbtn-lft"><div class="pzbtn-rgt" ><div class="pzbtn-mid" ><img src="webwb/zblankimage.gif" alt="" class="pzbtn-i">EZComm</div></div></div></div></button>');
+                    }    
       } 
 
 }(jQuery, window, document));
