@@ -1,10 +1,9 @@
-console.log("update 20 nomar");
+console.log("update 21 nomar");
 
 (function ($, window, document, undefined) {
 
     'use strict';
     // Get member sessionStorage from maestro
-    var member_dataSession = JSON.parse(window.parent.sessionStorage.getItem("member_info"));
     var pageUrl = document.forms[0].elements["TaskSectionReference"].value;
     var householdIdGpp = getAttributeValue("pyWorkPage", "MemberID");
 
@@ -73,7 +72,7 @@ console.log("update 20 nomar");
     function getMemberDataMandR() {
         console.log(householdIdGpp);
         var ezcommMandRMemObj = {};
-
+        var member_dataSession = JSON.parse(window.parent.sessionStorage.getItem("member_info"));
         var memberDob = member_dataSession.member_dob;
         var year = memberDob.substring(0, 4);
         var month = memberDob.substring(4, 6);
@@ -285,7 +284,6 @@ console.log("update 20 nomar");
 
                 if (window.parent.$('iframe[id=' + activeTier1IframeIds + ']').contents().find("span:contains('None of the cases found are related to the current inquiry')").length > 0) {
                     householdIdGpp = window.parent.$('iframe[id=' + activeTier1IframeIds + ']')[0].contentWindow.getAttributeValue("pyWorkPage", "MemberID");
-                    member_dataSession = JSON.parse(window.parent.sessionStorage.getItem("member_info"));
                 }
             }, 2000)
 
