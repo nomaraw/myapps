@@ -1,4 +1,4 @@
-console.log("update 18 nomar");
+console.log("update 19 nomar");
 
 (function ($, window, document, undefined) {
 
@@ -6,7 +6,7 @@ console.log("update 18 nomar");
     // Get member sessionStorage from maestro
     var member_dataSession = JSON.parse(window.parent.sessionStorage.getItem("member_info"));
     var pageUrl = document.forms[0].elements["TaskSectionReference"].value;
-    var householdIdSched;
+    var householdIdGpp = getAttributeValue("pyWorkPage", "MemberID");
 
     var activeTier1IframeId = window.parent.$('div[id^="PegaWebGadget"]').filter(
         function () {
@@ -14,6 +14,9 @@ console.log("update 18 nomar");
         }).filter(function () {
         return $(this).attr('aria-hidden') === "false";
     }).contents()[0].id;
+    var householdIdGpp;
+
+    householdIdGpp = window.parent.$('iframe[id=' + activeTier1IframeId + ']')[0].contentWindow.getAttributeValue("pyWorkPage", "MemberID");
 
 
     function isAutodocMnrNotEmpty() {
@@ -68,6 +71,7 @@ console.log("update 18 nomar");
     }
 
     function getMemberDataMandR() {
+        console.log(householdIdGpp);
         var ezcommMandRMemObj = {};
 
         var memberDob = member_dataSession.member_dob;
@@ -84,7 +88,7 @@ console.log("update 18 nomar");
         ezcommMandRMemObj.policyId = "0";
         ezcommMandRMemObj.encryptedFlag = false;
         ezcommMandRMemObj.additionalIdentifiers = [{
-            id: "",
+            id: householdIdGpp,
             type: "GPSHID"
         }];
         return ezcommMandRMemObj;
@@ -249,17 +253,42 @@ console.log("update 18 nomar");
 
 
   
-    function getHouseHoldIdAppt() {
-        householdIdSched = getAttributeValue("pyWorkPage", "MemberID");
-        return householdIdSched;
-    }
+    // function getHouseHoldIdAppt() {
+    //     householdIdSched = getAttributeValue("pyWorkPage", "MemberID");
+    //     return householdIdSched;
+    // }
 
-    if (pageUrl == "ScheduleAppointment") {
-        getHouseHoldIdAppt();
-        $(document).on('DOMSubtreeModified', '.sectionDivStyle', function() { // TODO: Change approach 
-            sessionStorage.setItem('campaignName', 'AppointmentSched');
-            getHouseHoldIdAppt();
-        });
+    // if (pageUrl == "ScheduleAppointment") {
+    //     getHouseHoldIdAppt();
+    //     $(document).on('DOMSubtreeModified', '.sectionDivStyle', function() { // TODO: Change approach 
+    //         sessionStorage.setItem('campaignName', 'AppointmentSched');
+    //         getHouseHoldIdAppt();
+    //     });
+
+    // }
+
+    window.parent.document.getElementById('l1').addEventListener('click', loaded, false);
+
+    function loaded(event) {
+
+        if (event.target.matches('.layout-noheader-interaction_tabs .Header_nav')) {
+
+            setTimeout(function() {
+
+                var activeTier1IframeIds = window.parent.$('div[id^="PegaWebGadget"]').filter(
+                    function() {
+                        return this.id.match(/\d$/);
+                    }).filter(function() {
+                    return $(this).attr('aria-hidden') == "false"
+                }).contents()[0].id;
+
+
+                if (window.parent.$('iframe[id=' + activeTier1IframeIds + ']').contents().find("span:contains('None of the cases found are related to the current inquiry')").length > 0) {
+                    householdIdGpp = window.parent.$('iframe[id=' + activeTier1IframeIds + ']')[0].contentWindow.getAttributeValue("pyWorkPage", "MemberID");
+                }
+            }, 2000)
+
+        }
 
     }
 
