@@ -1,4 +1,4 @@
-console.log("update 27 nomar");
+console.log("update 28 nomar");
 
 (function ($, window, document, undefined) {
 
@@ -161,9 +161,10 @@ console.log("update 27 nomar");
 
     var providerTierNotes = '';
     if (document.forms[0].elements["TaskSectionReference"].value == "Tier1CompletionDetails") {
+        console.log('here tier1 autodoc')
 
         //TODO: ADD OPT_IN MESSAGE HERE..s
-        if(sessionStorage.getItem('campaignName') === "MakeAPayment_GPSCC") { // TODO: change URL PAYMENT HEADER
+        if(sessionStorage.getItem('campaignName') === "MakeAPayment_GPSCC") {   // TODO: change URL PAYMENT HEADER
 
             var configuration = false;
             var myObj = requestMetaDataGPP().plugins;
@@ -253,12 +254,12 @@ var ezcommCore = {
     //     return householdIdSched;
     // }
 
-    // if (pageUrl == "ScheduleAppointment") {
+     if (pageUrl == "MakeAPayment_GPSCC") {
     //     getHouseHoldIdAppt();
     //     $(document).on('DOMSubtreeModified', '.sectionDivStyle', function() { // TODO: Change approach 
-    //         sessionStorage.setItem('campaignName', 'AppointmentSched');
+             sessionStorage.setItem('campaignName', 'MakeAPayment_GPSCC');
     //         getHouseHoldIdAppt();
-    //     });
+        };
 
     // }
 
@@ -280,6 +281,7 @@ var ezcommCore = {
 
                 if (window.parent.$('iframe[id=' + activeTier1IframeIds + ']').contents().find("span:contains('None of the cases found are related to the current inquiry')").length > 0) {
                     householdIdGpp = window.parent.$('iframe[id=' + activeTier1IframeIds + ']')[0].contentWindow.getAttributeValue("pyWorkPage", "MemberID");
+                
                 }
             }, 2000)
 
