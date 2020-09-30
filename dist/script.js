@@ -1,4 +1,4 @@
-console.log("update 40 nomar");
+console.log("update 41 nomar");
 
 (function ($, window, document, undefined) {
 
@@ -162,6 +162,8 @@ console.log("update 40 nomar");
 
 
     var providerTierNotes = '';
+    if(document.forms[0].elements["TaskSectionReference"] !== undefined) {
+       
     if (document.forms[0].elements["TaskSectionReference"].value == "Tier1CompletionDetails") {
         console.log('here tier1 autodoc')
 
@@ -196,7 +198,7 @@ console.log("update 40 nomar");
             window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('#Comments').val(providerTierNotes);
         }
     }
-
+}
 
 var ezcommCore = {
         app: {
