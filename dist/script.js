@@ -1,4 +1,4 @@
-console.log("update 28 nomar");
+console.log("update 29 nomar");
 
 (function ($, window, document, undefined) {
 
@@ -165,7 +165,7 @@ console.log("update 28 nomar");
 
         //TODO: ADD OPT_IN MESSAGE HERE..s
         if(sessionStorage.getItem('campaignName') === "MakeAPayment_GPSCC") {   // TODO: change URL PAYMENT HEADER
-
+            console.log('here tier1 autodoc second')
             var configuration = false;
             var myObj = requestMetaDataGPP().plugins;
             Object.keys(myObj).forEach(function (key) {
@@ -219,7 +219,7 @@ var ezcommCore = {
 
     function messageEventGpp(msg) {
         if(msg.data) {
-            console.log('msg');
+            console.log('msg', msg);
             sessionStorage.setItem('messageSuccess', 'success');
             var data = msg.data.replace("Preference ", "").replace("Override ", "");
             var isNull = false;
@@ -281,7 +281,7 @@ var ezcommCore = {
 
                 if (window.parent.$('iframe[id=' + activeTier1IframeIds + ']').contents().find("span:contains('None of the cases found are related to the current inquiry')").length > 0) {
                     householdIdGpp = window.parent.$('iframe[id=' + activeTier1IframeIds + ']')[0].contentWindow.getAttributeValue("pyWorkPage", "MemberID");
-                
+                    sessionStorage.setItem('campaignName', 'MakeAPayment_GPSCC');
                 }
             }, 2000)
 
