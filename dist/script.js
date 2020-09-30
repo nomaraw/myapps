@@ -1,4 +1,4 @@
-console.log("update 24 nomar");
+console.log("update 25 nomar");
 
 (function ($, window, document, undefined) {
 
@@ -176,18 +176,18 @@ console.log("update 24 nomar");
             });
 
             if (configuration) {
-                if (sessionStorage.getItem('autodocmnrappt') !== null) { // TODO: Storage name
-                    providerTierNotes = sessionStorage.getItem('autodocmnrappt');
+                if (sessionStorage.getItem('autodocmnrgpp') !== null) { // TODO: Storage name
+                    providerTierNotes = sessionStorage.getItem('autodocmnrgpp');
 
-                    if(sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_IN"  ) { // // TODO: Storage name
-                        sessionStorage.removeItem('QuestionRadioStatusAppt');
-                        sessionStorage.removeItem('schedproviders');
-                    }
+                    // if(sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_IN"  ) { // // TODO: Storage name
+                    //     sessionStorage.removeItem('QuestionRadioStatusAppt');
+                    //     sessionStorage.removeItem('schedproviders');
+                    // }
                 }                
             }  else {
-                if(sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_IN" || sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_OUT") {
-                    sessionStorage.removeItem('QuestionRadioStatusAppt');
-                    sessionStorage.removeItem('schedproviders');
+                // if(sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_IN" || sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_OUT") {
+                //     sessionStorage.removeItem('QuestionRadioStatusAppt');
+                //     sessionStorage.removeItem('schedproviders');
                 }
             }
             window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('#Comments').val(providerTierNotes);
@@ -195,7 +195,7 @@ console.log("update 24 nomar");
     }
 
 
-    var ezcommCore = {
+var ezcommCore = {
         app: {
 
             appWindow: null,
@@ -216,19 +216,17 @@ console.log("update 24 nomar");
     };
 
 
-    function messageEventAppt(msg) {
+    function messageEventGpp(msg) {
         if(msg.data) {
-            var additionalAutoDoc = sessionStorage.getItem('schedproviders') + "\n";
             console.log('msg');
             sessionStorage.setItem('messageSuccess', 'success');
-            var data = msg.data.replace("Preference ", "").replace("Override ", "").replace(additionalAutoDoc, "");
+            var data = msg.data.replace("Preference ", "").replace("Override ", "");
             var isNull = false;
-            if(window.parent.sessionStorage.getItem('autodocmnrappt') === null) {
-                window.parent.sessionStorage.setItem('autodocmnrappt', data + additionalAutoDoc);
+            if(window.parent.sessionStorage.getItem('autodocmnrgpp') === null) {
+                window.parent.sessionStorage.setItem('autodocmnrgpp', data);
                 isNull = true;
-            }
-            else {
-                appendToStorage('autodocmnrappt', data, additionalAutoDoc);
+            } else {
+                appendToStorage('autodocmnrgpp', data);
 
             }
             return false;
@@ -236,16 +234,14 @@ console.log("update 24 nomar");
     }
 
 
-    function appendToStorage(name, data, additionalAutoDoc){
+    function appendToStorage(name, data){
         var old = window.parent.sessionStorage.getItem(name);
         var oldContainer = "";
         if(old === null) {
             old = "";
             oldContainer = old;
-        } else {
-            oldContainer = old.replace(additionalAutoDoc,"");
-        }
-        var newAuto = data + additionalAutoDoc;
+        } 
+        var newAuto = data;
         console.log(newAuto);
         window.parent.sessionStorage.setItem(name, oldContainer += newAuto);
     }
@@ -293,6 +289,8 @@ console.log("update 24 nomar");
 
 
 window.parent.openGPP = function() {
+
+    window.parent.removeEventListener("message", messageEventGpp, false);  
         var config = {
             data: {
                 member: getMemberDataMandR(),
@@ -312,7 +310,9 @@ window.parent.openGPP = function() {
                 window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("#gpppaymentheader").length === 0) {
                     console.log('condition in');
                     $('#RULE_KEY > div:nth-child(1) > div > div > div > div > p').append('<button style="margin-bottom:10px" onclick="window.parent.openGPP()" type="button" id="gpppaymentheader"><div class="pzbtn-rnd" ><div class="pzbtn-lft"><div class="pzbtn-rgt" ><div class="pzbtn-mid" ><img src="webwb/zblankimage.gif" alt="" class="pzbtn-i">EZComm</div></div></div></div></button>');
-                    }    
+                    
+                    window.parent.addEventListener("message", messageEventGpp, false);
+                }    
       } 
 
 }(jQuery, window, document));
