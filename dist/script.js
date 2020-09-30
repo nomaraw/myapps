@@ -1,10 +1,12 @@
-console.log("update 30 nomar");
+console.log("update 40 nomar");
 
 (function ($, window, document, undefined) {
 
     'use strict';
     // Get member sessionStorage from maestro
-    var pageUrl = document.forms[0].elements["TaskSectionReference"].value;
+    if(document.forms[0].elements["TaskSectionReference"] !== undefined) {
+        var pageUrl = document.forms[0].elements["TaskSectionReference"].value;
+    }
     var householdIdGpp = getAttributeValue("pyWorkPage", "MemberID");
 
     var activeTier1IframeId = window.parent.$('div[id^="PegaWebGadget"]').filter(
@@ -312,7 +314,7 @@ window.parent.openGPP = function() {
             if (window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("span:contains('None of the cases found are related to the current inquiry')").length > 0 &&
                 window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("#gpppaymentheader").length === 0) {
                     console.log('condition in');
-                    $('#RULE_KEY > div:nth-child(1) > div > div > div > div > p').append('<button style="margin-bottom:10px" onclick="window.parent.openGPP()" type="button" id="gpppaymentheader"><div class="pzbtn-rnd" ><div class="pzbtn-lft"><div class="pzbtn-rgt" ><div class="pzbtn-mid" ><img src="ezcomm_big.png" alt="" class="pzbtn-i">EZComm</div></div></div></div></button>');
+                    $('#RULE_KEY > div:nth-child(1) > div > div > div > div > p').append('<button style="margin-bottom:10px;width:65px;height:40px;padding:0;border-radius: 10px;border: none;cursor: pointer;" onclick="window.parent.openGPP()" type="button" id="gpppaymentheader"><div class="pzbtn-rnd" ><div class="pzbtn-lft"><div class="pzbtn-rgt" ><div class="pzbtn-mid" ><img src="ezcomm_big.png" style="width:65px;height: 36px;" alt="" class="pzbtn-i">EZComm</div></div></div></div></button>');
                 }    
       } 
 
