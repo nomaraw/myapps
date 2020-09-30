@@ -1,4 +1,4 @@
-console.log("update 25 nomar");
+console.log("update 26 nomar");
 
 (function ($, window, document, undefined) {
 
@@ -188,7 +188,7 @@ console.log("update 25 nomar");
                 // if(sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_IN" || sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_OUT") {
                 //     sessionStorage.removeItem('QuestionRadioStatusAppt');
                 //     sessionStorage.removeItem('schedproviders');
-                }
+               // }
             }
             window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('#Comments').val(providerTierNotes);
         }
