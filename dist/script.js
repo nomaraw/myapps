@@ -1,4 +1,4 @@
-console.log("update 41 nomar");
+console.log("update 1 nomar autodocrefreshing");
 
 (function ($, window, document, undefined) {
 
@@ -20,36 +20,36 @@ console.log("update 41 nomar");
     householdIdGpp = window.parent.$('iframe[id=' + activeTier1IframeId + ']')[0].contentWindow.getAttributeValue("pyWorkPage", "MemberID");
 
 
-    function isAutodocMnrNotEmpty() {
-        if (sessionStorage.getItem('autodocmnrgpp') !== null) {
-            window.parent.sessionStorage.removeItem('autodocmnrgpp');
-            window.parent.sessionStorage.removeItem('messageSuccess');
+    // function isAutodocMnrNotEmpty() {
+    //     if (sessionStorage.getItem('autodocmnrgpp') !== null) {
+    //         window.parent.sessionStorage.removeItem('autodocmnrgpp');
+    //         window.parent.sessionStorage.removeItem('messageSuccess');
 
-        } else if(sessionStorage.getItem('autodocmnrgpp') === null) {
-            window.parent.sessionStorage.removeItem('autodocmnrgpp');
-            window.parent.sessionStorage.removeItem('messageSuccess');
+    //     } else if(sessionStorage.getItem('autodocmnrgpp') === null) {
+    //         window.parent.sessionStorage.removeItem('autodocmnrgpp');
+    //         window.parent.sessionStorage.removeItem('messageSuccess');
 
-        }
-        return false;
-    }
+    //     }
+    //     return false;
+    // }
 
-    function checkIfReset(){
-        if(sessionStorage.getItem('autodocmnrgpp') !== null) {
-            window.parent.sessionStorage.removeItem('autodocmnrgpp');
-            window.parent.sessionStorage.removeItem('messageSuccess');
-            reset = true;
-        }
-    }
+    // function checkIfReset(){
+    //     if(sessionStorage.getItem('autodocmnrgpp') !== null) {
+    //         window.parent.sessionStorage.removeItem('autodocmnrgpp');
+    //         window.parent.sessionStorage.removeItem('messageSuccess');
+    //         reset = true;
+    //     }
+    // }
 
-    //TODO: remove?
-    if (pageUrl == "MakeAPayment_GPSCC") {
-        isAutodocMnrNotEmpty();
-    }
+    // //TODO: remove?
+    // if (pageUrl == "MakeAPayment_GPSCC") {
+    //     isAutodocMnrNotEmpty();
+    // }
 
     function launchWinMnR() {
         var appWindow = window.parent.open("/a4me/ezcomm-core-v2/", "a4meEZCommWindow", 'location=no,height=600,width=1000,scrollbars=1');
-        isAutodocMnrNotEmpty();
-        checkIfReset();
+       // isAutodocMnrNotEmpty();
+       // checkIfReset();
 
         var configappt = false;
         var myObj = requestMetaDataGPP().plugins;
@@ -166,6 +166,11 @@ console.log("update 41 nomar");
        
     if (document.forms[0].elements["TaskSectionReference"].value == "Tier1CompletionDetails") {
         console.log('here tier1 autodoc')
+        if (sessionStorage.getItem('autodocmnrgpp') !== null) {
+            console.log('checking if null si autodocmnrgpp');
+            sessionStorage.setItem('tier1GppGanyan', sessionStorage.getItem('autodocmnrgpp'));
+            sessionStorage.removeItem('autodocmnrgpp');
+        }
 
         //TODO: ADD OPT_IN MESSAGE HERE..s
         if(sessionStorage.getItem('campaignName') === "MakeAPayment_GPSCC") {   // TODO: change URL PAYMENT HEADER
@@ -181,8 +186,8 @@ console.log("update 41 nomar");
             });
 
             if (configuration) {
-                if (sessionStorage.getItem('autodocmnrgpp') !== null) { // TODO: Storage name
-                    providerTierNotes = sessionStorage.getItem('autodocmnrgpp');
+                if (sessionStorage.getItem('tier1GppGanyan') !== null) { // TODO: Storage name
+                    providerTierNotes = sessionStorage.getItem('tier1GppGanyan');
 
                     // if(sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_IN"  ) { // // TODO: Storage name
                     //     sessionStorage.removeItem('QuestionRadioStatusAppt');
@@ -244,8 +249,8 @@ var ezcommCore = {
         var oldContainer = "";
         if(old === null) {
             old = "";
-            oldContainer = old;
         } 
+        oldContainer = old;
         var newAuto = data;
         console.log(newAuto);
         window.parent.sessionStorage.setItem(name, oldContainer += newAuto);
@@ -316,7 +321,7 @@ window.parent.openGPP = function() {
             if (window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("span:contains('None of the cases found are related to the current inquiry')").length > 0 &&
                 window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("#gpppaymentheader").length === 0) {
                     console.log('condition in');
-                    $('#RULE_KEY > div:nth-child(1) > div > div > div > div > p').append('<button style="margin-bottom:10px;width:65px;height:40px;padding:0;border-radius: 10px;border: none;cursor: pointer;" onclick="window.parent.openGPP()" type="button" id="gpppaymentheader"><div class="pzbtn-rnd" ><div class="pzbtn-lft"><div class="pzbtn-rgt" ><div class="pzbtn-mid" ><img src="ezcomm_big.png" style="width:65px;height: 36px;" alt="" class="pzbtn-i">EZComm</div></div></div></div></button>');
+                    $('#RULE_KEY > div:nth-child(1) > div > div > div > div > p').append('<button style="margin-bottom:10px;width: 100%;max-width: 59px;height: 60px;border-radius: 10px; cursor: pointer;margin-top: 11px;background:url(/a4me/ezcomm-launcher-maestro-gpp-payment-header/images/ezcomm_big.png);background-position: center;background-repeat: no-repeat;background-size: cover" onclick="window.parent.openGPP()" type="button" id="gpppaymentheader"></button>');
                 }    
       } 
 
