@@ -263,15 +263,10 @@ window.parent.openGPP = function() {
         ezcommCore.app.open(config);
         window.parent.addEventListener("message", messageEventGpp, false);
     }
-
-       console.log('beforeButtonVar');
         var ezcommButtonVar = setInterval(addEzcommCoreLauncherGPPPayment, 1500);
-        console.log('afterButtonVar');
         function addEzcommCoreLauncherGPPPayment() {
-            console.log('interval triggered');
             if (window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("span:contains('None of the cases found are related to the current inquiry')").length > 0 &&
                 window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("#gpppaymentheader").length === 0) {
-                    console.log('condition in');
                     $('#RULE_KEY > div:nth-child(1) > div > div > div > div > p').append('<button style="margin-bottom:10px;width: 100%;max-width: 59px;height: 60px;border-radius: 10px; cursor: pointer;margin-top: 11px;background:url(/a4me/ezcomm-launcher-maestro-gpp-payment-header/images/ezcomm_big.png);background-position: center;background-repeat: no-repeat;background-size: cover" onclick="window.parent.openGPP()" type="button" id="gpppaymentheader"></button>');
                 }    
       } 
