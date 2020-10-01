@@ -1,4 +1,4 @@
-console.log("update 1 nomar autodocrefreshing");
+console.log("update 2 nomar autodocrefreshing");
 
 (function ($, window, document, undefined) {
 
@@ -173,7 +173,7 @@ console.log("update 1 nomar autodocrefreshing");
         }
 
         //TODO: ADD OPT_IN MESSAGE HERE..s
-        if(sessionStorage.getItem('campaignName') === "MakeAPayment_GPSCC") {   // TODO: change URL PAYMENT HEADER
+        if(sessionStorage.getItem('campaignName') === "MakeAPayment_GPSCC" || sessionStorage.getItem('campaignName') === "UHG-MedRet-IIM-Work-MakeAPayment") {   // TODO: change URL PAYMENT HEADER
             console.log('here tier1 autodoc second')
             var configuration = false;
             var myObj = requestMetaDataGPP().plugins;
@@ -263,10 +263,10 @@ var ezcommCore = {
     //     return householdIdSched;
     // }
 
-     if (pageUrl == "MakeAPayment_GPSCC") {
+     if (pageUrl == "MakeAPayment_GPSCC" || pageUrl == "UHG-MedRet-IIM-Work-MakeAPayment") {
     //     getHouseHoldIdAppt();
     //     $(document).on('DOMSubtreeModified', '.sectionDivStyle', function() { // TODO: Change approach 
-             sessionStorage.setItem('campaignName', 'MakeAPayment_GPSCC');
+             sessionStorage.setItem('campaignName', pageUrl);
     //         getHouseHoldIdAppt();
         };
 
@@ -290,7 +290,7 @@ var ezcommCore = {
 
                 if (window.parent.$('iframe[id=' + activeTier1IframeIds + ']').contents().find("span:contains('None of the cases found are related to the current inquiry')").length > 0) {
                     householdIdGpp = window.parent.$('iframe[id=' + activeTier1IframeIds + ']')[0].contentWindow.getAttributeValue("pyWorkPage", "MemberID");
-                    sessionStorage.setItem('campaignName', 'MakeAPayment_GPSCC');
+                    sessionStorage.setItem('campaignName', pageUrl);
                 }
             }, 2000)
 
