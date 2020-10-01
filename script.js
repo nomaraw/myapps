@@ -1,5 +1,3 @@
-console.log("update 3 nomar pageUrl");
-
 (function ($, window, document, undefined) {
 
     'use strict';
@@ -22,37 +20,8 @@ console.log("update 3 nomar pageUrl");
 
     householdIdGpp = window.parent.$('iframe[id=' + activeTier1IframeId + ']')[0].contentWindow.getAttributeValue("pyWorkPage", "MemberID");
 
-
-    // function isAutodocMnrNotEmpty() {
-    //     if (sessionStorage.getItem('autodocmnrgpp') !== null) {
-    //         window.parent.sessionStorage.removeItem('autodocmnrgpp');
-    //         window.parent.sessionStorage.removeItem('messageSuccess');
-
-    //     } else if(sessionStorage.getItem('autodocmnrgpp') === null) {
-    //         window.parent.sessionStorage.removeItem('autodocmnrgpp');
-    //         window.parent.sessionStorage.removeItem('messageSuccess');
-
-    //     }
-    //     return false;
-    // }
-
-    // function checkIfReset(){
-    //     if(sessionStorage.getItem('autodocmnrgpp') !== null) {
-    //         window.parent.sessionStorage.removeItem('autodocmnrgpp');
-    //         window.parent.sessionStorage.removeItem('messageSuccess');
-    //         reset = true;
-    //     }
-    // }
-
-    // //TODO: remove?
-    // if (pageUrl == "MakeAPayment_GPSCC") {
-    //     isAutodocMnrNotEmpty();
-    // }
-
     function launchWinMnR() {
         var appWindow = window.parent.open("/a4me/ezcomm-core-v2/", "a4meEZCommWindow", 'location=no,height=600,width=1000,scrollbars=1');
-       // isAutodocMnrNotEmpty();
-       // checkIfReset();
 
         var configappt = false;
         var myObj = requestMetaDataGPP().plugins;
@@ -168,16 +137,13 @@ console.log("update 3 nomar pageUrl");
     if(document.forms[0].elements["TaskSectionReference"] !== undefined) {
        
     if (document.forms[0].elements["TaskSectionReference"].value == "Tier1CompletionDetails") {
-        console.log('here tier1 autodoc')
         if (sessionStorage.getItem('autodocmnrgpp') !== null) {
-            console.log('checking if null si autodocmnrgpp');
             sessionStorage.setItem('tier1GppAutoDocEzcomm', sessionStorage.getItem('autodocmnrgpp'));
             sessionStorage.removeItem('autodocmnrgpp');
         }
 
         //TODO: ADD OPT_IN MESSAGE HERE..s
         if(sessionStorage.getItem('campaignName') === "MakeAPayment_GPSCC" || sessionStorage.getItem('campaignName') === "UHG-MedRet-IIM-Work-MakeAPayment") {   // TODO: change URL PAYMENT HEADER
-            console.log('here tier1 autodoc second')
             var configuration = false;
             var myObj = requestMetaDataGPP().plugins;
             Object.keys(myObj).forEach(function (key) {
@@ -192,17 +158,8 @@ console.log("update 3 nomar pageUrl");
                 if (sessionStorage.getItem('tier1GppAutoDocEzcomm') !== null) { // TODO: Storage name
                     providerTierNotes = sessionStorage.getItem('tier1GppAutoDocEzcomm');
 
-                    // if(sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_IN"  ) { // // TODO: Storage name
-                    //     sessionStorage.removeItem('QuestionRadioStatusAppt');
-                    //     sessionStorage.removeItem('schedproviders');
-                    // }
                 }                
-            }  else {
-                // if(sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_IN" || sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_OUT") {
-                //     sessionStorage.removeItem('QuestionRadioStatusAppt');
-                //     sessionStorage.removeItem('schedproviders');
-               // }
-            }
+            } 
             window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('#Comments').val(providerTierNotes);
         }
     }
@@ -261,19 +218,10 @@ var ezcommCore = {
 
 
   
-    // function getHouseHoldIdAppt() {
-    //     householdIdSched = getAttributeValue("pyWorkPage", "MemberID");
-    //     return householdIdSched;
-    // }
     console.log('pageUrl before set to campaign', pageUrl);
      if (pageUrl == "MakeAPayment_GPSCC" || pageUrl == "UHG-MedRet-IIM-Work-MakeAPayment") {
-    //     getHouseHoldIdAppt();
-    //     $(document).on('DOMSubtreeModified', '.sectionDivStyle', function() { // TODO: Change approach 
              sessionStorage.setItem('campaignName', pageUrl);
-    //         getHouseHoldIdAppt();
         };
-
-    // }
 
     window.parent.document.getElementById('l1').addEventListener('click', loaded, false);
 
