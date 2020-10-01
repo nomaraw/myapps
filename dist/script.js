@@ -1,11 +1,14 @@
-console.log("update 2 nomar autodocrefreshing");
+console.log("update 3 nomar pageUrl");
 
 (function ($, window, document, undefined) {
 
     'use strict';
     // Get member sessionStorage from maestro
+    var pageUrl;
     if(document.forms[0].elements["TaskSectionReference"] !== undefined) {
-        var pageUrl = document.forms[0].elements["TaskSectionReference"].value;
+        pageUrl = document.forms[0].elements["TaskSectionReference"].value;
+    } else {
+        pageUrl = sessionStorage.getItem('pageUrl');
     }
     var householdIdGpp = getAttributeValue("pyWorkPage", "MemberID");
 
