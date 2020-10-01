@@ -167,7 +167,8 @@ console.log("update 1 nomar autodocrefreshing");
     if (document.forms[0].elements["TaskSectionReference"].value == "Tier1CompletionDetails") {
         console.log('here tier1 autodoc')
         if (sessionStorage.getItem('autodocmnrgpp') !== null) {
-            sessionStorage.setItem('tier1GppGanyan', sessionStorage.getItem('autodocmnrgpp'));
+            console.log('checking if null si autodocmnrgpp');
+            sessionStorage.setItem('tier1GppAutoDocEzcomm', sessionStorage.getItem('autodocmnrgpp'));
             sessionStorage.removeItem('autodocmnrgpp');
         }
 
@@ -185,8 +186,8 @@ console.log("update 1 nomar autodocrefreshing");
             });
 
             if (configuration) {
-                if (sessionStorage.getItem('tier1GppGanyan') !== null) { // TODO: Storage name
-                    providerTierNotes = sessionStorage.getItem('tier1GppGanyan');
+                if (sessionStorage.getItem('tier1GppAutoDocEzcomm') !== null) { // TODO: Storage name
+                    providerTierNotes = sessionStorage.getItem('tier1GppAutoDocEzcomm');
 
                     // if(sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_IN"  ) { // // TODO: Storage name
                     //     sessionStorage.removeItem('QuestionRadioStatusAppt');
@@ -325,4 +326,3 @@ window.parent.openGPP = function() {
       } 
 
 }(jQuery, window, document));
-
