@@ -1,4 +1,4 @@
-console.log("update 2 nomar autodocrefreshing");
+console.log("update 3 nomar autodocrefreshing");
 
 (function ($, window, document, undefined) {
 
@@ -272,11 +272,8 @@ window.parent.openGPP = function() {
         window.parent.addEventListener("message", messageEventGpp, false);
     }
 
-       console.log('beforeButtonVar');
         var ezcommButtonVar = setInterval(addEzcommCoreLauncherGPPPayment, 1500);
-        console.log('afterButtonVar');
         function addEzcommCoreLauncherGPPPayment() {
-            console.log('interval triggered');
             if (window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("span:contains('None of the cases found are related to the current inquiry')").length > 0 &&
                 window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("#gpppaymentheader").length === 0) {
                     console.log('condition in');
