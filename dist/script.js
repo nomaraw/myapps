@@ -1,4 +1,4 @@
-console.log("update 1 nomar autodocrefreshing");
+console.log("update 2 nomar autodocrefreshing");
 
 (function ($, window, document, undefined) {
 
@@ -19,37 +19,8 @@ console.log("update 1 nomar autodocrefreshing");
 
     householdIdGpp = window.parent.$('iframe[id=' + activeTier1IframeId + ']')[0].contentWindow.getAttributeValue("pyWorkPage", "MemberID");
 
-
-    // function isAutodocMnrNotEmpty() {
-    //     if (sessionStorage.getItem('autodocmnrgpp') !== null) {
-    //         window.parent.sessionStorage.removeItem('autodocmnrgpp');
-    //         window.parent.sessionStorage.removeItem('messageSuccess');
-
-    //     } else if(sessionStorage.getItem('autodocmnrgpp') === null) {
-    //         window.parent.sessionStorage.removeItem('autodocmnrgpp');
-    //         window.parent.sessionStorage.removeItem('messageSuccess');
-
-    //     }
-    //     return false;
-    // }
-
-    // function checkIfReset(){
-    //     if(sessionStorage.getItem('autodocmnrgpp') !== null) {
-    //         window.parent.sessionStorage.removeItem('autodocmnrgpp');
-    //         window.parent.sessionStorage.removeItem('messageSuccess');
-    //         reset = true;
-    //     }
-    // }
-
-    // //TODO: remove?
-    // if (pageUrl == "MakeAPayment_GPSCC") {
-    //     isAutodocMnrNotEmpty();
-    // }
-
     function launchWinMnR() {
         var appWindow = window.parent.open("/a4me/ezcomm-core-v2/", "a4meEZCommWindow", 'location=no,height=600,width=1000,scrollbars=1');
-       // isAutodocMnrNotEmpty();
-       // checkIfReset();
 
         var configappt = false;
         var myObj = requestMetaDataGPP().plugins;
@@ -165,10 +136,8 @@ console.log("update 1 nomar autodocrefreshing");
     if(document.forms[0].elements["TaskSectionReference"] !== undefined) {
        
     if (document.forms[0].elements["TaskSectionReference"].value == "Tier1CompletionDetails") {
-        console.log('here tier1 autodoc')
         if (sessionStorage.getItem('autodocmnrgpp') !== null) {
-            console.log('checking if null si autodocmnrgpp');
-            sessionStorage.setItem('tier1GppGanyan', sessionStorage.getItem('autodocmnrgpp'));
+            sessionStorage.setItem('tier1GppAutoDocEzcomm', sessionStorage.getItem('autodocmnrgpp'));
             sessionStorage.removeItem('autodocmnrgpp');
         }
 
@@ -186,20 +155,10 @@ console.log("update 1 nomar autodocrefreshing");
             });
 
             if (configuration) {
-                if (sessionStorage.getItem('tier1GppGanyan') !== null) { // TODO: Storage name
-                    providerTierNotes = sessionStorage.getItem('tier1GppGanyan');
-
-                    // if(sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_IN"  ) { // // TODO: Storage name
-                    //     sessionStorage.removeItem('QuestionRadioStatusAppt');
-                    //     sessionStorage.removeItem('schedproviders');
-                    // }
+                if (sessionStorage.getItem('tier1GppAutoDocEzcomm') !== null) { // TODO: Storage name
+                    providerTierNotes = sessionStorage.getItem('tier1GppAutoDocEzcomm');
                 }                
-            }  else {
-                // if(sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_IN" || sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_OUT") {
-                //     sessionStorage.removeItem('QuestionRadioStatusAppt');
-                //     sessionStorage.removeItem('schedproviders');
-               // }
-            }
+            } 
             window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('#Comments').val(providerTierNotes);
         }
     }
