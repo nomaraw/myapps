@@ -262,7 +262,7 @@ var ezcommCore = {
     //     householdIdSched = getAttributeValue("pyWorkPage", "MemberID");
     //     return householdIdSched;
     // }
-
+    console.log('pageUrl before set to campaign', pageUrl);
      if (pageUrl == "MakeAPayment_GPSCC" || pageUrl == "UHG-MedRet-IIM-Work-MakeAPayment") {
     //     getHouseHoldIdAppt();
     //     $(document).on('DOMSubtreeModified', '.sectionDivStyle', function() { // TODO: Change approach 
