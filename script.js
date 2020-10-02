@@ -271,6 +271,12 @@ window.parent.openGPP = function() {
 
 
      // EFT Payment header start
-     console.log('eft start here'); 
+     console.log('eft start here 1'); 
+     var ezcommButtonEftVar = setInterval(addEzcommCoreLauncherGPPPaymentEft, 1500);
+     function addEzcommCoreLauncherGPPPaymentEft() {
+         if (window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("#gpppaymentheaderEFT").length === 0) {
+                 $('#RULE_KEY > span:nth-child(3)').prepend('<button style="margin-bottom:10px;width: 100%;max-width: 59px;height: 60px;border-radius: 10px; cursor: pointer;margin-top: 11px;background:url(/a4me/ezcomm-launcher-maestro-gpp-payment-header/images/ezcomm_big.png);background-position: center;background-repeat: no-repeat;background-size: cover" onclick="window.parent.openGPP()" type="button" id="gpppaymentheaderEFT"></button>');
+             }    
+   } 
 
 }(jQuery, window, document));
