@@ -271,10 +271,11 @@ window.parent.openGPP = function() {
 
 
      // EFT Payment header start
-     console.log('eft start here 1'); 
+     console.log('eft start here 2'); 
      var ezcommButtonEftVar = setInterval(addEzcommCoreLauncherGPPPaymentEft, 1500);
      function addEzcommCoreLauncherGPPPaymentEft() {
-         if (window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("#gpppaymentheaderEFT").length === 0) {
+         if (window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("span:contains('One Time EFT payment may take up to 72 hours to appear on the member's bank account.')").length > 0 &&
+          window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("#gpppaymentheaderEFT").length === 0) {
                  $('#RULE_KEY > span:nth-child(3)').prepend('<button style="margin-bottom:10px;width: 100%;max-width: 59px;height: 60px;border-radius: 10px; cursor: pointer;margin-top: 11px;background:url(/a4me/ezcomm-launcher-maestro-gpp-payment-header/images/ezcomm_big.png);background-position: center;background-repeat: no-repeat;background-size: cover" onclick="window.parent.openGPP()" type="button" id="gpppaymentheaderEFT"></button>');
              }    
    } 
