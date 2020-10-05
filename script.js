@@ -1,10 +1,10 @@
-console.log('nomar fix 3');
-(function ($, window, document, undefined) {
+console.log('fixing button missing nomar local');
+(function($, window, document, undefined) {
 
     'use strict';
     // Get member sessionStorage from maestro
     var pageUrl;
-    if(document.forms[0].elements["TaskSectionReference"] !== undefined) {
+    if (document.forms[0].elements["TaskSectionReference"] !== undefined) {
         pageUrl = document.forms[0].elements["TaskSectionReference"].value;
     } else {
         pageUrl = sessionStorage.getItem('pageUrl');
@@ -12,9 +12,9 @@ console.log('nomar fix 3');
     var householdIdGpp = getAttributeValue("pyWorkPage", "MemberID");
 
     var activeTier1IframeId = window.parent.$('div[id^="PegaWebGadget"]').filter(
-        function () {
+        function() {
             return this.id.match(/\d$/);
-        }).filter(function () {
+        }).filter(function() {
         return $(this).attr('aria-hidden') === "false";
     }).contents()[0].id;
     var householdIdGpp;
@@ -26,17 +26,23 @@ console.log('nomar fix 3');
 
         var configappt = false;
         var myObj = requestMetaDataGPP().plugins;
-        Object.keys(myObj).forEach(function (key) {
+        Object.keys(myObj).forEach(function(key) {
             if (myObj[key].pluginId === "10" && myObj[key].name === "Autodoc") {
                 configappt = true;
                 console.log('config is ON');
             }
         });
 
-        var loop = setInterval(function () {
+        var loop = setInterval(function() {
             if (appWindow.closed) {
-                if (sessionStorage.getItem('messageSuccess') === null && configappt) {
-                    window.parent.sessionStorage.removeItem("autodocmnrgpp");
+                if (appWindow.closed) {
+                    if(sessionStorage.getItem('messageSuccessCc') !== null) {
+                        $("#cccbtnyes").prop("checked", true);
+                    } else {
+                        $("#cccbtnyes").prop("checked", false);
+                    }
+
+                    clearInterval(loop);
                 }
 
                 clearInterval(loop);
@@ -135,43 +141,52 @@ console.log('nomar fix 3');
 
 
     var providerTierNotes = '';
-    if(document.forms[0].elements["TaskSectionReference"] !== undefined) {
-       
-    if (document.forms[0].elements["TaskSectionReference"].value == "Tier1CompletionDetails") {
-        if (sessionStorage.getItem('autodocmnrgpp') !== null) {
-            sessionStorage.setItem('tier1GppAutoDocEzcomm', sessionStorage.getItem('autodocmnrgpp'));
-            sessionStorage.removeItem('autodocmnrgpp');
-        }
+    if (document.forms[0].elements["TaskSectionReference"] !== undefined) {
 
-        //TODO: ADD OPT_IN MESSAGE HERE..s
-        if(sessionStorage.getItem('campaignName') === "MakeAPayment_GPSCC" || sessionStorage.getItem('campaignName') === "UHG-MedRet-IIM-Work-MakeAPayment") {   // TODO: change URL PAYMENT HEADER
-            var configuration = false;
-            var myObj = requestMetaDataGPP().plugins;
-            Object.keys(myObj).forEach(function (key) {
-                console.log(myObj[key].pluginId); // the value of the current key.
-                if (myObj[key].pluginId === "10" && myObj[key].name === "Autodoc") {
-                    configuration = true;
-                    console.log('config is ON');
+        if (document.forms[0].elements["TaskSectionReference"].value == "Tier1CompletionDetails") {
+            if (sessionStorage.getItem('autodocmnrgpp') === null) {
+                sessionStorage.removeItem('tier1GppAutoDocEzcomm');
+                sessionStorage.removeItem('gppNo');
+            } else {
+                sessionStorage.setItem('tier1GppAutoDocEzcomm', sessionStorage.getItem('autodocmnrgpp'));
+                sessionStorage.removeItem('autodocmnrgpp');
+                if (sessionStorage.getItem('messageSuccessCc') !== null) {
+                    sessionStorage.removeItem('messageSuccessCc');
+                    if(sessionStorage.getItem('gppNo') !== null) {
+                        sessionStorage.removeItem('gppNo');
+                    }
                 }
-            });
+            }
 
-            if (configuration) {
-                if (sessionStorage.getItem('tier1GppAutoDocEzcomm') !== null) { // TODO: Storage name
-                    providerTierNotes = sessionStorage.getItem('tier1GppAutoDocEzcomm');
+            //TODO: ADD OPT_IN MESSAGE HERE..s
+            if (sessionStorage.getItem('campaignName') === "MakeAPayment_GPSCC" || sessionStorage.getItem('campaignName') === "UHG-MedRet-IIM-Work-MakeAPayment" || sessionStorage.getItem('campaignName') === "PaymentConfirmation_GPSCC") { // TODO: change URL PAYMENT HEADER
+                var configuration = false;
+                var myObj = requestMetaDataGPP().plugins;
+                Object.keys(myObj).forEach(function(key) {
+                    console.log(myObj[key].pluginId); // the value of the current key.
+                    if (myObj[key].pluginId === "10" && myObj[key].name === "Autodoc") {
+                        configuration = true;
+                        console.log('config is ON');
+                    }
+                });
 
-                }                
-            } 
-            window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('#Comments').val(providerTierNotes);
+                if (configuration) {
+                    if (sessionStorage.getItem('tier1GppAutoDocEzcomm') !== null) { // TODO: Storage name
+                        providerTierNotes = sessionStorage.getItem('tier1GppAutoDocEzcomm');
+
+                    }
+                }
+                window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('#Comments').val(providerTierNotes);
+            }
         }
     }
-}
 
-var ezcommCore = {
+    var ezcommCore = {
         app: {
 
             appWindow: null,
 
-            open: function (config) {
+            open: function(config) {
                 window.parent.localStorage.setItem('EzcommCommunicationsPayload', JSON.stringify(config));
 
                 if (localStorage.getItem("EzcommWindowOpen") === 'true') {
@@ -180,7 +195,7 @@ var ezcommCore = {
                 launchWinMnR();
             },
 
-            get: function () {
+            get: function() {
                 return this.appWindow;
             }
         }
@@ -188,12 +203,12 @@ var ezcommCore = {
 
 
     function messageEventGpp(msg) {
-        if(msg.data) {
+        if (msg.data) {
             console.log('msg', msg);
             sessionStorage.setItem('messageSuccess', 'success');
             var data = msg.data.replace("Preference ", "").replace("Override ", "");
             var isNull = false;
-            if(window.parent.sessionStorage.getItem('autodocmnrgpp') === null) {
+            if (window.parent.sessionStorage.getItem('autodocmnrgpp') === null) {
                 window.parent.sessionStorage.setItem('autodocmnrgpp', data);
                 isNull = true;
             } else {
@@ -204,13 +219,33 @@ var ezcommCore = {
         }
     }
 
+    function messageEventGppCC(msg) {
+        if(msg.data) {
+            console.log('msg12', msg);
+            sessionStorage.setItem('messageSuccessCc', 'success');
+            var data = msg.data.replace("Preference ", "").replace("Override ", "");
+            console.log(data);
+            var isNull = false;
+            if(window.parent.sessionStorage.getItem('autodocmnrgpp') === null) {
+                console.log('testing');
+                window.parent.sessionStorage.setItem('autodocmnrgpp', data);
+                isNull = true;
+            } else {
+                console.log('werwere');
+                appendToStorage('autodocmnrgpp', data);
 
-    function appendToStorage(name, data){
+            }
+            return false;
+        }
+    }
+
+
+    function appendToStorage(name, data) {
         var old = window.parent.sessionStorage.getItem(name);
         var oldContainer = "";
-        if(old === null) {
+        if (old === null) {
             old = "";
-        } 
+        }
         oldContainer = old;
         var newAuto = data;
         console.log(newAuto);
@@ -218,14 +253,15 @@ var ezcommCore = {
     }
 
 
-     if (pageUrl == "MakeAPayment_GPSCC" || pageUrl == "UHG-MedRet-IIM-Work-MakeAPayment") {
-             sessionStorage.setItem('campaignName', pageUrl);
-        };
+    if (pageUrl == "MakeAPayment_GPSCC" || pageUrl == "UHG-MedRet-IIM-Work-MakeAPayment" || pageUrl == "PaymentConfirmation_GPSCC") {
+        sessionStorage.setItem('campaignName', pageUrl);
+    };
 
-    window.parent.document.getElementById('l1').addEventListener('click', loaded, false);
+    window.parent.document.querySelector('.layout-noheader-interaction_tabs1').addEventListener('click', loaded, false);
 
     function loaded(event) {
 
+        console.log('event target', event.target);
         if (event.target.matches('.layout-noheader-interaction_tabs .Header_nav')) {
 
             setTimeout(function() {
@@ -239,9 +275,7 @@ var ezcommCore = {
 
 
                 if (window.parent.$('iframe[id=' + activeTier1IframeIds + ']').contents().find("span:contains('None of the cases found are related to the current inquiry')").length > 0) {
-                    console.log('set household id');
                     householdIdGpp = window.parent.$('iframe[id=' + activeTier1IframeIds + ']')[0].contentWindow.getAttributeValue("pyWorkPage", "MemberID");
-                    console.log(householdIdGpp);
                     sessionStorage.setItem('campaignName', pageUrl);
                 }
             }, 2000)
@@ -251,36 +285,76 @@ var ezcommCore = {
     }
 
 
-window.parent.openGPP = function() {
+    window.parent.openGPP = function() {
 
-    window.parent.removeEventListener("message", messageEventGpp, false);  
+        window.parent.removeEventListener("message", messageEventGpp, false);
         var config = {
             data: {
                 member: getMemberDataMandR(),
                 request_metadata: requestMetaDataGPP(),
                 message: messagesMandR()
             }
-        }
+        };
         ezcommCore.app.open(config);
         window.parent.addEventListener("message", messageEventGpp, false);
+    };
+
+    window.parent.openGPPCc = function() {
+
+        window.parent.removeEventListener("message", messageEventGppCC, false);
+        var config = {
+            data: {
+                member: getMemberDataMandR(),
+                request_metadata: requestMetaDataGPP(),
+                message: messagesMandR()
+            }
+        };
+        ezcommCore.app.open(config);
+        window.parent.addEventListener("message", messageEventGppCC, false);
+    };
+
+    window.parent.gppNo = function() {
+
+        sessionStorage.setItem('gppNo', 'gppNoBtn');
+    };
+
+
+
+    var ezcommButtonVar = setInterval(addEzcommCoreLauncherGPPPayment, 1500);
+
+    function addEzcommCoreLauncherGPPPayment() {
+        if (window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("span:contains('None of the cases found are related to the current inquiry')").length > 0 &&
+            window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("#gpppaymentheader").length === 0) {
+            $('#RULE_KEY > div:nth-child(1) > div > div > div > div > p').append('<button style="margin-bottom:10px;width: 100%;max-width: 59px;height: 60px;border-radius: 10px; cursor: pointer;margin-top: 11px;background:url(/a4me/ezcomm-launcher-maestro-gpp-payment-header/images/ezcomm_big.png);background-position: center;background-repeat: no-repeat;background-size: cover" onclick="window.parent.openGPP()" type="button" id="gpppaymentheader"></button>');
+        }
     }
-        var ezcommButtonVar = setInterval(addEzcommCoreLauncherGPPPayment, 1500);
-        function addEzcommCoreLauncherGPPPayment() {
-            if (window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("span:contains('None of the cases found are related to the current inquiry')").length > 0 &&
-                window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("#gpppaymentheader").length === 0) {
-                    $('#RULE_KEY > div:nth-child(1) > div > div > div > div > p').append('<button style="margin-bottom:10px;width: 100%;max-width: 59px;height: 60px;border-radius: 10px; cursor: pointer;margin-top: 11px;background:url(/a4me/ezcomm-launcher-maestro-gpp-payment-header/images/ezcomm_big.png);background-position: center;background-repeat: no-repeat;background-size: cover" onclick="window.parent.openGPP()" type="button" id="gpppaymentheader"></button>');
-                }    
-      } 
 
 
-     // EFT Payment header start
-     console.log('eft start here 4'); 
-     var ezcommButtonEftVar = setInterval(addEzcommCoreLauncherGPPPaymentEft, 1500);
-     function addEzcommCoreLauncherGPPPaymentEft() {
-         if (window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("span:contains('One Time EFT payment may take up to 72 hours to appear on the member's bank account.')").length > 0 &&
-          window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("#gpppaymentheaderEFT").length === 0) {
-                 $("div[data-node-id='PaymentConfirmation_GPSCC'] > span:nth-child(3)").prepend('<button style="margin-bottom:10px;width: 100%;max-width: 59px;height: 60px;border-radius: 10px; cursor: pointer;margin-top: 11px;background:url(/a4me/ezcomm-launcher-maestro-gpp-payment-header/images/ezcomm_big.png);background-position: center;background-repeat: no-repeat;background-size: cover" onclick="window.parent.openGPP()" type="button" id="gpppaymentheaderEFT"></button>');
-             }    
-   } 
+    // EFT Payment header start
+    var ezcommButtonEftVar = setInterval(addEzcommCoreLauncherGPPPaymentEft, 1500);
+
+    function addEzcommCoreLauncherGPPPaymentEft() {
+        if (window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("span:contains('One Time EFT payment may take up to 72 hours to appear on the member's bank account.')").length > 0 &&
+            window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("#gpppaymentheaderEFT").length === 0) {
+            $("div[data-node-id='PaymentConfirmation_GPSCC'] > span:nth-child(3)").prepend('<button style="margin-bottom:10px;width: 100%;max-width: 59px;height: 60px;border-radius: 10px; cursor: pointer;margin-top: 11px;background:url(/a4me/ezcomm-launcher-maestro-gpp-payment-header/images/ezcomm_big.png);background-position: center;background-repeat: no-repeat;background-size: cover" onclick="window.parent.openGPP()" type="button" id="gpppaymentheaderEFT"></button>');
+        }
+    }
+
+    var ezcommButtonVarCc = setInterval(addTriggerQuestionCC, 1500);
+
+    function addTriggerQuestionCC() {
+        if (window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("label:contains('Review & Submit Payment Confirmation')").length > 0 &&
+            window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("#cctrigger").length === 0) {
+            if (document.getElementById("pyWorkPageSaveCreditCardInfoNo").checked) {
+                $('#pyWorkPageSaveCreditCardInfoNo').parent().addClass('weeewew').prev().addClass('s').parent().parent().addClass('1').parent().parent().parent().addClass('11').prev().parent().append('<div style="" id="cctrigger" class="content-item content-field item-1" string_type="field" reserve_space="false"><div class="content-inner "><div class="field-item dataValueRead">Does the caller want a link to the Guest Payment Portal?</div></div></div><div style="" class="content-item content-field item-2   " string_type="field" reserve_space="false"><div class="content-inner "><div class="field-item dataValueWrite"><div class="radioTable"><div><span class="col-3"><input validationtype="required" id="cccbtnyes" type="radio" onclick="window.parent.openGPPCc()" name="cccbtnyes" value="Yes" class="Radio" style="vertical-align: middle;"><label title=""for="cccbtnyes" class="rb_ rb_standard radioLabel">Yes</label></span><span class="col-3"><input onclick="window.parent.gppNo()"  id="cccbtnno" type="radio" name="cccbtnyes" value="No" class="Radio" style="vertical-align: middle;"><label title="" for="cccbtnno" class="rb_ rb_standard radioLabel">No</label></span></div></div></div></div></div>');
+                if (sessionStorage.getItem("messageSuccessCc") !== null) {
+                    document.getElementById('cccbtnyes').checked = true
+                } else if(sessionStorage.getItem('gppNo') !== null && sessionStorage.getItem("messageSuccessCc") === null) {
+                    document.getElementById('cccbtnno').checked = true
+                }
+            }
+        }
+    }
+
 
 }(jQuery, window, document));
