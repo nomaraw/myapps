@@ -137,7 +137,9 @@
     if(document.forms[0].elements["TaskSectionReference"] !== undefined) {
        
     if (document.forms[0].elements["TaskSectionReference"].value == "Tier1CompletionDetails") {
-        if (sessionStorage.getItem('autodocmnrgpp') !== null) {
+        if (sessionStorage.getItem('autodocmnrgpp') === null) {
+            sessionStorage.removeItem('tier1GppAutoDocEzcomm');
+        } else {
             sessionStorage.setItem('tier1GppAutoDocEzcomm', sessionStorage.getItem('autodocmnrgpp'));
             sessionStorage.removeItem('autodocmnrgpp');
         }
@@ -271,7 +273,6 @@ window.parent.openGPP = function() {
 
 
      // EFT Payment header start
-     console.log('eft start here 4'); 
      var ezcommButtonEftVar = setInterval(addEzcommCoreLauncherGPPPaymentEft, 1500);
      function addEzcommCoreLauncherGPPPaymentEft() {
          if (window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("span:contains('One Time EFT payment may take up to 72 hours to appear on the member's bank account.')").length > 0 &&
