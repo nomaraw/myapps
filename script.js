@@ -1,4 +1,4 @@
-console.log('nomar fix');
+console.log('nomar fix 2');
 (function ($, window, document, undefined) {
 
     'use strict';
@@ -238,7 +238,8 @@ var ezcommCore = {
                 }).contents()[0].id;
 
 
-                if (window.parent.$('iframe[id=' + activeTier1IframeIds + ']').contents()) {
+                if (window.parent.$('iframe[id=' + activeTier1IframeIds + ']').contents().find("span:contains('None of the cases found are related to the current inquiry')").length > 0) {
+                    console.log('set household id');
                     householdIdGpp = window.parent.$('iframe[id=' + activeTier1IframeIds + ']')[0].contentWindow.getAttributeValue("pyWorkPage", "MemberID");
                     sessionStorage.setItem('campaignName', pageUrl);
                 }
