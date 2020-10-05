@@ -1,3 +1,4 @@
+console.log('nomar fix');
 (function ($, window, document, undefined) {
 
     'use strict';
@@ -137,9 +138,7 @@
     if(document.forms[0].elements["TaskSectionReference"] !== undefined) {
        
     if (document.forms[0].elements["TaskSectionReference"].value == "Tier1CompletionDetails") {
-        if (sessionStorage.getItem('autodocmnrgpp') === null) {
-            sessionStorage.removeItem('tier1GppAutoDocEzcomm');
-        } else {
+        if (sessionStorage.getItem('autodocmnrgpp') !== null) {
             sessionStorage.setItem('tier1GppAutoDocEzcomm', sessionStorage.getItem('autodocmnrgpp'));
             sessionStorage.removeItem('autodocmnrgpp');
         }
@@ -239,7 +238,7 @@ var ezcommCore = {
                 }).contents()[0].id;
 
 
-                if (window.parent.$('iframe[id=' + activeTier1IframeIds + ']').contents().find("span:contains('None of the cases found are related to the current inquiry')").length > 0) {
+                if (window.parent.$('iframe[id=' + activeTier1IframeIds + ']').contents()) {
                     householdIdGpp = window.parent.$('iframe[id=' + activeTier1IframeIds + ']')[0].contentWindow.getAttributeValue("pyWorkPage", "MemberID");
                     sessionStorage.setItem('campaignName', pageUrl);
                 }
@@ -273,6 +272,7 @@ window.parent.openGPP = function() {
 
 
      // EFT Payment header start
+     console.log('eft start here 4'); 
      var ezcommButtonEftVar = setInterval(addEzcommCoreLauncherGPPPaymentEft, 1500);
      function addEzcommCoreLauncherGPPPaymentEft() {
          if (window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("span:contains('One Time EFT payment may take up to 72 hours to appear on the member's bank account.')").length > 0 &&
