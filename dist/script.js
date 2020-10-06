@@ -1,15 +1,16 @@
-console.log('fixing button missing nomar local');
+console.log('removing reset autodoc provider info v1');
+
 (function($, window, document, undefined) {
 
     'use strict';
     // Get member sessionStorage from maestro
-    var pageUrl;
-    if (document.forms[0].elements["TaskSectionReference"] !== undefined) {
-        pageUrl = document.forms[0].elements["TaskSectionReference"].value;
-    } else {
-        pageUrl = sessionStorage.getItem('pageUrl');
-    }
-    var householdIdGpp = getAttributeValue("pyWorkPage", "MemberID");
+    var member_dataSession = JSON.parse(window.parent.sessionStorage.getItem("member_info"));
+    var houseHoldNum;
+    var ezcommCommunications;
+    var pageurl = document.forms[0].elements["TaskSectionReference"].value;
+    var reset = false;
+    var householdId = getAttributeValue("pyWorkPage", "MemberID");
+
 
     var activeTier1IframeId = window.parent.$('div[id^="PegaWebGadget"]').filter(
         function() {
@@ -17,43 +18,89 @@ console.log('fixing button missing nomar local');
         }).filter(function() {
         return $(this).attr('aria-hidden') === "false";
     }).contents()[0].id;
-    var householdIdGpp;
 
-    householdIdGpp = window.parent.$('iframe[id=' + activeTier1IframeId + ']')[0].contentWindow.getAttributeValue("pyWorkPage", "MemberID");
+
+    function isAutodocMnrNotEmpty() {
+        if(sessionStorage.getItem('autodocmnrprovider') !== null && sessionStorage.getItem('QuestionradioStatus') !== 'OPT_IN') {
+            window.parent.sessionStorage.removeItem('autodocmnrprovider'); // autodoc
+            window.parent.sessionStorage.removeItem('messageSuccess');
+
+            if(sessionStorage.getItem('optout') !== null) {
+                sessionStorage.removeItem('optout');
+            }
+
+            console.log(sessionStorage.getItem('autodocmnrprovider'));
+        } else if(sessionStorage.getItem('autodocmnrprovider') === null && sessionStorage.getItem('QuestionradioStatus') !== 'OPT_IN') {
+            window.parent.sessionStorage.removeItem('autodocmnrprovider');
+            window.parent.sessionStorage.removeItem('messageSuccess');
+
+            if(sessionStorage.getItem('optout') !== null) {
+                sessionStorage.removeItem('optout');
+            }
+        }
+        return false;
+    }
+
+    function checkIfReset(){
+
+        if(sessionStorage.getItem('autodocmnrprovider') !== null && sessionStorage.getItem('QuestionradioStatus') === 'OPT_IN') {
+            window.parent.sessionStorage.removeItem('autodocmnrprovider');
+            window.parent.sessionStorage.removeItem('messageSuccess');
+            reset = true;
+        }
+    }
+
+    if(document.forms[0].elements["TaskSectionReference"].value == "AssignPCP"){
+        isAutodocMnrNotEmpty();
+    }
 
     function launchWinMnR() {
         var appWindow = window.parent.open("/a4me/ezcomm-core-v2/", "a4meEZCommWindow", 'location=no,height=600,width=1000,scrollbars=1');
+        isAutodocMnrNotEmpty();
+        checkIfReset();
+        var msgprov = messagesMandR()[0].msg_parameters.providers;
+        var detail = '';
 
-        var configappt = false;
-        var myObj = requestMetaDataGPP().plugins;
+        var isconfig = false;
+        var myObj = requestMetaDataMandR().plugins;
         Object.keys(myObj).forEach(function(key) {
-            if (myObj[key].pluginId === "10" && myObj[key].name === "Autodoc") {
-                configappt = true;
+            console.log(myObj[key].pluginId); // the value of the current key.
+            if(myObj[key].pluginId === "10" && myObj[key].name === "Autodoc") {
+                isconfig = true;
                 console.log('config is ON');
+            } else {
+                isconfig = false;
+                console.log('config off');
             }
+
         });
+
+        if(messagesMandR()[0].msg_parameters.providers.length > 0) {
+            Object.keys(msgprov).forEach(function(key) {
+                detail += msgprov[key].name + "\n" + msgprov[key].address + "\n" + msgprov[key].phone + "\n" + "\n";
+            });
+            sessionStorage.setItem('schedprov', detail);
+        } else{
+            console.log('empty provider table');
+            sessionStorage.setItem('schedprov', "");
+        }
 
         var loop = setInterval(function() {
             if (appWindow.closed) {
-                if (appWindow.closed) {
-                    if(sessionStorage.getItem('messageSuccessCc') !== null) {
-                        $("#cccbtnyes").prop("checked", true);
-                    } else {
-                        $("#cccbtnyes").prop("checked", false);
-                    }
-
-                    clearInterval(loop);
+                if (sessionStorage.getItem('messageSuccess') === null && isconfig) {
+                    window.parent.sessionStorage.removeItem("QuestionradioStatus");
+                    document.getElementById('ezcomm-mnr-mail-question-yes').checked = false;
+                    window.parent.sessionStorage.removeItem("autodocmnrprovider");
                 }
-
                 clearInterval(loop);
             }
         }, 1000);
     }
 
+
     function getMemberDataMandR() {
-        console.log(householdIdGpp);
         var ezcommMandRMemObj = {};
-        var member_dataSession = JSON.parse(window.parent.sessionStorage.getItem("member_info"));
+
         var memberDob = member_dataSession.member_dob;
         var year = memberDob.substring(0, 4);
         var month = memberDob.substring(4, 6);
@@ -68,14 +115,14 @@ console.log('fixing button missing nomar local');
         ezcommMandRMemObj.policyId = "0";
         ezcommMandRMemObj.encryptedFlag = false;
         ezcommMandRMemObj.additionalIdentifiers = [{
-            id: householdIdGpp,
+            id: householdId,
             type: "GPSHID"
         }];
         return ezcommMandRMemObj;
     }
 
 
-    function requestMetaDataGPP() {
+    function requestMetaDataMandR() {
         var requestMetaDataMandRObj = {};
         var pluginObject = [];
         var plugin = {};
@@ -97,13 +144,25 @@ console.log('fixing button missing nomar local');
 
         plugin.name = "";
         plugin.defaultCampaign = "";
-        plugin.pluginId = "9";
+        plugin.pluginId = "";
 
         plugin2.pluginId = "10";
         plugin2.name = "Autodoc";
-        plugin2.params = {
-            additionalAutoDoc: ""
-        };
+
+        var msgprov = messagesMandR()[0].msg_parameters.providers;
+        var detail = '';
+
+        if(messagesMandR()[0].msg_parameters.providers.length > 0) {
+            Object.keys(msgprov).forEach(function(key) {
+                detail += msgprov[key].name + "\n" + msgprov[key].address + "\n" + msgprov[key].phone + "\n" + "\n";
+            });
+            sessionStorage.setItem('schedprov', detail);
+        } else{
+            console.log('empty provider table');
+            sessionStorage.setItem('schedprov', "");
+        }
+
+        plugin2.params = { additionalAutoDoc: sessionStorage.getItem('schedprov') };
 
         pluginObject.push(plugin);
         pluginObject.push(plugin2);
@@ -114,79 +173,241 @@ console.log('fixing button missing nomar local');
         return requestMetaDataMandRObj;
     }
 
-
-
     function messagesMandR() {
 
         var objs;
-        var objprov1 = {};
-        var objprov2 = {};
+        var obj1 = {};
+        var obj2 = {};
         var msg_param = {};
+        var msg_param2 = {};
         var filtersObject = [];
 
-        objprov1.type = "EMAIL";
-        objprov1.campaignId = 0;
-        objprov1.template_name = "";
-        objprov1.msg_parameters = [];
+        obj1.type = "EMAIL";
+        obj1.campaignId = 67;
+        obj1.template_name = "Provider_Info_EMAIL";
+        msg_param.firstName = member_dataSession.member_first_name;
+        msg_param.lastName = member_dataSession.member_last_name;
+        obj1.msg_parameters = msg_param;
+        obj1.msg_parameters.providers = [];
 
-        objprov2.type = "SMS";
-        objprov2.campaignId = 0;
-        objprov2.template_name = "";
-        objprov2.msg_parameters = [];
+        obj2.type = "SMS";
+        obj2.campaignId = 67;
+        obj2.template_name = "Provider_Info_SMS";
+        msg_param.firstName = member_dataSession.member_first_name;
+        msg_param.lastName = member_dataSession.member_last_name;
+        obj2.msg_parameters = msg_param2;
+        obj2.msg_parameters.providers = [];
 
-        filtersObject.push(objprov1);
-        filtersObject.push(objprov2);
+        window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('#bodyTbl_right tr:not(:first)').each(function() {
+            var provider = {};
+            provider.name = window.parent.$(this).find("td:eq(2)").find("span").html();
+            provider.address = window.parent.$(this).find("td:eq(3)").find("span").html();
+            provider.phone = window.parent.$(this).find("td:eq(10)").find("span").html();
+            if (typeof provider.name == 'undefined' ||
+                provider.name.indexOf("<input") !== -1 ||
+                provider.address.indexOf("<input") !== -1 ||
+                provider.phone.indexOf("<input") !== -1) {
+                console.error("ERROR html tag found in provider.");
+
+            } else {
+                var currentProviderInfo = "";
+                for (var key2 in provider) {
+                    if (key2 !== '$$hashKey' && provider[key2].trim().length !== 0 && provider[key2]) {
+                        currentProviderInfo = currentProviderInfo + provider[key2].trim() + "\n";
+                    }
+                }
+
+
+                objs = {
+                    name: provider.name.trim(),
+                    phone: provider.phone.trim(),
+                    address: provider.address.trim()
+                };
+
+
+                obj1.msg_parameters.providers.push(objs); // email
+                obj2.msg_parameters.providers.push(objs); // sms
+
+            }
+        });
+
+        filtersObject.push(obj1);
+        filtersObject.push(obj2);
+
         return filtersObject;
     }
 
 
-    var providerTierNotes = '';
-    if (document.forms[0].elements["TaskSectionReference"] !== undefined) {
+    function getCurrentDateTime() {
+        var d = new Date();
+        var day = d.getDate();
+        var hr = d.getHours();
+        var min = d.getMinutes();
+        if (min < 10) {
+            min = "0" + min;
+        }
+        var ampm = "am";
+        if (hr > 12) {
+            hr -= 12;
+            ampm = "pm";
+        } else if (hr == 12) {
+            ampm = "pm";
+        }
 
-        if (document.forms[0].elements["TaskSectionReference"].value == "Tier1CompletionDetails") {
-            if (sessionStorage.getItem('autodocmnrgpp') === null) {
-                sessionStorage.removeItem('tier1GppAutoDocEzcomm');
-                sessionStorage.removeItem('gppNo');
-            } else {
-                sessionStorage.setItem('tier1GppAutoDocEzcomm', sessionStorage.getItem('autodocmnrgpp'));
-                sessionStorage.removeItem('autodocmnrgpp');
-                if (sessionStorage.getItem('messageSuccessCc') !== null) {
-                    sessionStorage.removeItem('messageSuccessCc');
-                    if(sessionStorage.getItem('gppNo') !== null) {
-                        sessionStorage.removeItem('gppNo');
-                    }
-                }
-            }
+        if(hr < 10) { hr = "0" + hr; }
 
-            //TODO: ADD OPT_IN MESSAGE HERE..s
-            if (sessionStorage.getItem('campaignName') === "MakeAPayment_GPSCC" || sessionStorage.getItem('campaignName') === "UHG-MedRet-IIM-Work-MakeAPayment" || sessionStorage.getItem('campaignName') === "PaymentConfirmation_GPSCC") { // TODO: change URL PAYMENT HEADER
-                var configuration = false;
-                var myObj = requestMetaDataGPP().plugins;
-                Object.keys(myObj).forEach(function(key) {
-                    console.log(myObj[key].pluginId); // the value of the current key.
-                    if (myObj[key].pluginId === "10" && myObj[key].name === "Autodoc") {
-                        configuration = true;
-                        console.log('config is ON');
-                    }
-                });
+        var date = d.getDate() < 10 ? "0" + d.getDate() : d.getDate();
+        var month = d.getMonth() + 1;
+        if(month < 10) { month = "0" + month; }
 
-                if (configuration) {
-                    if (sessionStorage.getItem('tier1GppAutoDocEzcomm') !== null) { // TODO: Storage name
-                        providerTierNotes = sessionStorage.getItem('tier1GppAutoDocEzcomm');
+        var year = d.getFullYear();
+        var sec = d.getSeconds();
+        if(sec < 10) {
+            sec = "0" + sec;
+        }
 
-                    }
-                }
-                window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('#Comments').val(providerTierNotes);
+        var dateTimeString = month + "/" + date + "/" + year + " " + hr + ":" + min + ":" + sec + " " + ampm;
+        return dateTimeString;
+    }
+
+
+    var EmailCheckRadioButtonContent = '<td class="dataValueWrite" style="height:38px;width:193px;">\
+	<div class="radioTable" >\
+	    <div>\
+	        <span class="col-3"><input name="optradio" type="radio" value="yes" id="ezcomm-mnr-mail-question-yes" class="Radio ezcomm-mnr-mail-question-button" style="vertical-align: middle;"><label class="rb_ rb_standard radioLabel">Yes</label></span>\<span class="col-3"><input name="optradio" type="radio" value="no" id="ezcomm-mnr-mail-question-no" class="ezcomm-mnr-mail-question-button" style="vertical-align: middle;"><label class="rb_ rb_standard radioLabel">No</label></span>\
+	    </div>\
+	</div>\
+	</td>';
+
+    var EmailCheckRadioButtonContentYes = '<td class="dataValueWrite" style="height:38px;width:193px;">\
+	<div class="radioTable" >\
+	    <div>\
+	        <span class="col-3"><input name="optradio" type="radio" value="yes" id="ezcomm-mnr-mail-question-yes" class="Radio ezcomm-mnr-mail-question-button" style="vertical-align: middle;" checked><label class="rb_ rb_standard radioLabel">Yes</label></span>\<span class="col-3"><input name="optradio" type="radio" value="no" id="ezcomm-mnr-mail-question-no" class="ezcomm-mnr-mail-question-button" style="vertical-align: middle;"><label class="rb_ rb_standard radioLabel">No</label></span>\
+	    </div>\
+	</div>\
+	</td>';
+
+    var EmailCheckRadioButtonContentNo = '<td class="dataValueWrite" style="height:38px;width:193px;">\
+	<div class="radioTable" >\
+	    <div>\
+	        <span class="col-3"><input name="optradio" type="radio" value="yes" id="ezcomm-mnr-mail-question-yes" class="Radio ezcomm-mnr-mail-question-button" style="vertical-align: middle;"><label class="rb_ rb_standard radioLabel">Yes</label></span>\<span class="col-3"><input name="optradio" type="radio" value="no" id="ezcomm-mnr-mail-question-no" class="ezcomm-mnr-mail-question-button" style="vertical-align: middle;" checked><label class="rb_ rb_standard radioLabel">No</label></span>\
+	    </div>\
+	</div>\
+	</td>';
+
+
+
+    var varSectionIndex = "#pyFlowActionHTML div div[class='layout layout-noheader layout-noheader-default_with_all_borders'";
+
+    if (document.forms[0].elements["TaskSectionReference"].value == "AssignPCP") {
+        if(window.parent.sessionStorage.getItem("QuestionradioStatus") == null || window.parent.sessionStorage.getItem("QuestionradioStatus") == "") {
+            if(sessionStorage.getItem('messageSuccess') === null) {
+                $(varSectionIndex).prev().prepend('<tr id="newlyAddedQuestionEmail"><td><label class="dataValueWrite a4meDiv" style="vertical-align:middle;">Does the member want to receive provider information via text or email?</label></td>' + EmailCheckRadioButtonContent + '</tr>');
             }
         }
     }
 
+    var providerTierNotes = '';
+    if (document.forms[0].elements["TaskSectionReference"].value == "Tier1CompletionDetails") {
+
+        //TODO: ADD OPT_IN MESSAGE HERE..
+        if(sessionStorage.getItem("campaignName") === "ProviderInfo") {
+
+            var configuration = false;
+            var myObj = requestMetaDataMandR().plugins;
+            Object.keys(myObj).forEach(function(key) {
+                if(myObj[key].pluginId === "10" && myObj[key].name === "Autodoc") {
+                    configuration = true;
+                    console.log('config is ON');
+                } else {
+                    configuration = false;
+                }
+
+            });
+
+            if(configuration){
+                if(sessionStorage.getItem('autodocmnrprovider') !== null) {
+                    providerTierNotes = sessionStorage.getItem('autodocmnrprovider');
+
+                    if(sessionStorage.getItem('QuestionradioStatus') === "OPT_IN"  ) {
+                        sessionStorage.removeItem('QuestionradioStatus');
+                        sessionStorage.removeItem('schedprov');
+                    }
+
+                } else {
+                    var tier1Comments = window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('#Comments').val();
+                    if (tier1Comments === undefined || tier1Comments === '' || !tier1Comments.contains("Opt-in: Yes") ) {
+
+                        if(sessionStorage.getItem('optout') !== null) {
+                            providerTierNotes = "***Provider Information Email Message Opt-in: No, " + getCurrentDateTime() + "***\n"
+                                + "***Provider Information SMS Message Opt-in: No, " + getCurrentDateTime() + "***\n";
+                            sessionStorage.removeItem('QuestionradioStatus');
+                        }
+                    }
+                }
+            } else {
+                if(sessionStorage.getItem('QuestionradioStatus') === "OPT_IN" || sessionStorage.getItem('QuestionradioStatus') === "OPT_OUT") {
+                    sessionStorage.removeItem('QuestionradioStatus');
+                    sessionStorage.removeItem('schedprov');
+                }
+            }
+            window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('#Comments').val(providerTierNotes);
+        }
+    }
+
+    $(document).on('DOMSubtreeModified', '#pyFlowActionHTML div ', function() {
+        if ($("#newlyAddedQuestionEmail").length == 0 && document.forms[0].elements["TaskSectionReference"].value == "AssignPCP") {
+            if (window.parent.sessionStorage.getItem("QuestionradioStatus") == "OPT_IN"){
+                $(varSectionIndex).prev().prepend('<tr id="newlyAddedQuestionEmail"><td><label class="dataValueWrite a4meDiv" style="vertical-align:middle;">Does the member want to receive provider information via text or email?</label></td>' + EmailCheckRadioButtonContentYes + '</tr>');
+            }else if  (window.parent.sessionStorage.getItem("QuestionradioStatus") == "OPT_OUT") {
+                $(varSectionIndex).prev().prepend('<tr id="newlyAddedQuestionEmail"><td><label class="dataValueWrite a4meDiv" style="vertical-align:middle;">Does the member want to receive provider information via text or email?</label></td>' + EmailCheckRadioButtonContentNo + '</tr>');
+            }else {
+                $(varSectionIndex).prev().prepend('<tr id="newlyAddedQuestionEmail"><td><label class="dataValueWrite a4meDiv" style="vertical-align:middle;">Does the member want to receive provider information via text or email?</label></td>' + EmailCheckRadioButtonContent + '</tr>');
+            }
+        }
+    });
+
+
+    if(pageurl === "AssignPCP"){
+        sessionStorage.setItem('campaignName', 'ProviderInfo');
+        /*  $(document).on('DOMSubtreeModified', '.sectionDivStyle', function() {
+              sessionStorage.setItem('campaignName', 'ProviderInfo');
+              getHouseHoldId();
+          }); */
+
+        window.parent.document.getElementById('l1').addEventListener('click',  function(event) {
+
+            if (event.target.matches('.layout-noheader-interaction_tabs .Header_nav')) {
+
+                setTimeout(function() {
+
+                    var activeTier1IframeIds = window.parent.$('div[id^="PegaWebGadget"]').filter(
+                        function() {
+                            return this.id.match(/\d$/);
+                        }).filter(function() {
+                        return $(this).attr('aria-hidden') == "false"
+                    }).contents()[0].id;
+
+
+                    if (window.parent.$('iframe[id=' + activeTier1IframeIds + ']').contents().find("label:contains('Provider Information')").length > 0) {
+                        householdId = window.parent.$('iframe[id=' + activeTier1IframeIds + ']')[0].contentWindow.getAttributeValue("pyWorkPage", "MemberID");
+                        sessionStorage.setItem('campaignName', 'ProviderInfo');
+
+                    }
+                }, 2000)
+
+            }
+
+        }, false);
+
+    }
+
     var ezcommCore = {
-        app: {
+        app : {
 
             appWindow: null,
 
-            open: function(config) {
+            open: function (config) {
                 window.parent.localStorage.setItem('EzcommCommunicationsPayload', JSON.stringify(config));
 
                 if (localStorage.getItem("EzcommWindowOpen") === 'true') {
@@ -201,38 +422,19 @@ console.log('fixing button missing nomar local');
         }
     };
 
-
-    function messageEventGpp(msg) {
-        if (msg.data) {
-            console.log('msg', msg);
-            sessionStorage.setItem('messageSuccess', 'success');
-            var data = msg.data.replace("Preference ", "").replace("Override ", "");
-            var isNull = false;
-            if (window.parent.sessionStorage.getItem('autodocmnrgpp') === null) {
-                window.parent.sessionStorage.setItem('autodocmnrgpp', data);
-                isNull = true;
-            } else {
-                appendToStorage('autodocmnrgpp', data);
-
-            }
-            return false;
-        }
-    }
-
-    function messageEventGppCC(msg) {
+    function messageEvent(msg) {
         if(msg.data) {
-            console.log('msg12', msg);
-            sessionStorage.setItem('messageSuccessCc', 'success');
-            var data = msg.data.replace("Preference ", "").replace("Override ", "");
-            console.log(data);
+            var additionalAutoDoc = sessionStorage.getItem('schedprov') + "\n";
+            console.log('msg');
+            sessionStorage.setItem('messageSuccess', 'success');
+            var data = msg.data.replace("Preference ", "").replace("Override ", "").replace(additionalAutoDoc, "");
             var isNull = false;
-            if(window.parent.sessionStorage.getItem('autodocmnrgpp') === null) {
-                console.log('testing');
-                window.parent.sessionStorage.setItem('autodocmnrgpp', data);
+            if(window.parent.sessionStorage.getItem('autodocmnrprovider') === null) {
+                window.parent.sessionStorage.setItem('autodocmnrprovider', data + additionalAutoDoc);
                 isNull = true;
-            } else {
-                console.log('werwere');
-                appendToStorage('autodocmnrgpp', data);
+            }
+            else {
+                appendToStorage('autodocmnrprovider', data, additionalAutoDoc);
 
             }
             return false;
@@ -240,121 +442,59 @@ console.log('fixing button missing nomar local');
     }
 
 
-    function appendToStorage(name, data) {
+    function appendToStorage(name, data, additionalAutoDoc){
         var old = window.parent.sessionStorage.getItem(name);
         var oldContainer = "";
-        if (old === null) {
+        if(old === null) {
             old = "";
+            oldContainer = old;
+        } else {
+            oldContainer = old.replace(additionalAutoDoc,"");
         }
-        oldContainer = old;
-        var newAuto = data;
+        var newAuto = data + additionalAutoDoc;
         console.log(newAuto);
         window.parent.sessionStorage.setItem(name, oldContainer += newAuto);
     }
 
 
-    if (pageUrl == "MakeAPayment_GPSCC" || pageUrl == "UHG-MedRet-IIM-Work-MakeAPayment" || pageUrl == "PaymentConfirmation_GPSCC") {
-        sessionStorage.setItem('campaignName', pageUrl);
-    };
+    window.parent.$(document).on('change', '.ezcomm-mnr-mail-question-button', function() {
+        if (this.value == "yes") {
 
-    window.parent.document.querySelector('.layout-noheader-interaction_tabs1').addEventListener('click', loaded, false);
+            window.parent.removeEventListener("message", messageEvent, false);      // Succeeds
 
-    function loaded(event) {
+            window.parent.sessionStorage.setItem("QuestionradioStatus", "OPT_IN");
 
-        console.log('event target', event.target);
-        if (event.target.matches('.layout-noheader-interaction_tabs .Header_nav')) {
+            ezcommCommunications = {
+                config: {
+                    data: {
+                        member: {},
+                        request_metadata: {},
+                        message: messagesMandR()
 
-            setTimeout(function() {
-
-                var activeTier1IframeIds = window.parent.$('div[id^="PegaWebGadget"]').filter(
-                    function() {
-                        return this.id.match(/\d$/);
-                    }).filter(function() {
-                    return $(this).attr('aria-hidden') == "false"
-                }).contents()[0].id;
-
-
-                if (window.parent.$('iframe[id=' + activeTier1IframeIds + ']').contents().find("span:contains('None of the cases found are related to the current inquiry')").length > 0) {
-                    householdIdGpp = window.parent.$('iframe[id=' + activeTier1IframeIds + ']')[0].contentWindow.getAttributeValue("pyWorkPage", "MemberID");
-                    sessionStorage.setItem('campaignName', pageUrl);
+                    }
                 }
-            }, 2000)
+            };
 
-        }
+            ezcommCommunications.config.data.member = getMemberDataMandR();
+            ezcommCommunications.config.data.request_metadata = requestMetaDataMandR();
+            ezcommCommunications.config.data.message;
+            ezcommCore.app.open(ezcommCommunications.config);
 
-    }
 
+            var iframe = window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents();
 
-    window.parent.openGPP = function() {
-
-        window.parent.removeEventListener("message", messageEventGpp, false);
-        var config = {
-            data: {
-                member: getMemberDataMandR(),
-                request_metadata: requestMetaDataGPP(),
-                message: messagesMandR()
+            if(iframe) {
+                window.parent.addEventListener("message", messageEvent, false);
             }
-        };
-        ezcommCore.app.open(config);
-        window.parent.addEventListener("message", messageEventGpp, false);
-    };
 
-    window.parent.openGPPCc = function() {
-
-        window.parent.removeEventListener("message", messageEventGppCC, false);
-        var config = {
-            data: {
-                member: getMemberDataMandR(),
-                request_metadata: requestMetaDataGPP(),
-                message: messagesMandR()
-            }
-        };
-        ezcommCore.app.open(config);
-        window.parent.addEventListener("message", messageEventGppCC, false);
-    };
-
-    window.parent.gppNo = function() {
-
-        sessionStorage.setItem('gppNo', 'gppNoBtn');
-    };
-
-
-
-    var ezcommButtonVar = setInterval(addEzcommCoreLauncherGPPPayment, 1500);
-
-    function addEzcommCoreLauncherGPPPayment() {
-        if (window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("span:contains('None of the cases found are related to the current inquiry')").length > 0 &&
-            window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("#gpppaymentheader").length === 0) {
-            $('#RULE_KEY > div:nth-child(1) > div > div > div > div > p').append('<button style="margin-bottom:10px;width: 100%;max-width: 59px;height: 60px;border-radius: 10px; cursor: pointer;margin-top: 11px;background:url(/a4me/ezcomm-launcher-maestro-gpp-payment-header/images/ezcomm_big.png);background-position: center;background-repeat: no-repeat;background-size: cover" onclick="window.parent.openGPP()" type="button" id="gpppaymentheader"></button>');
-        }
-    }
-
-
-    // EFT Payment header start
-    var ezcommButtonEftVar = setInterval(addEzcommCoreLauncherGPPPaymentEft, 1500);
-
-    function addEzcommCoreLauncherGPPPaymentEft() {
-        if (window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("span:contains('One Time EFT payment may take up to 72 hours to appear on the member's bank account.')").length > 0 &&
-            window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("#gpppaymentheaderEFT").length === 0) {
-            $("div[data-node-id='PaymentConfirmation_GPSCC'] > span:nth-child(3)").prepend('<button style="margin-bottom:10px;width: 100%;max-width: 59px;height: 60px;border-radius: 10px; cursor: pointer;margin-top: 11px;background:url(/a4me/ezcomm-launcher-maestro-gpp-payment-header/images/ezcomm_big.png);background-position: center;background-repeat: no-repeat;background-size: cover" onclick="window.parent.openGPP()" type="button" id="gpppaymentheaderEFT"></button>');
-        }
-    }
-
-    var ezcommButtonVarCc = setInterval(addTriggerQuestionCC, 1500);
-
-    function addTriggerQuestionCC() {
-        if (window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("label:contains('Review & Submit Payment Confirmation')").length > 0 &&
-            window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find("#cctrigger").length === 0) {
-            if (document.getElementById("pyWorkPageSaveCreditCardInfoNo").checked) {
-                $('#pyWorkPageSaveCreditCardInfoNo').parent().addClass('weeewew').prev().addClass('s').parent().parent().addClass('1').parent().parent().parent().addClass('11').prev().parent().append('<div style="" id="cctrigger" class="content-item content-field item-1" string_type="field" reserve_space="false"><div class="content-inner "><div class="field-item dataValueRead">Does the caller want a link to the Guest Payment Portal?</div></div></div><div style="" class="content-item content-field item-2   " string_type="field" reserve_space="false"><div class="content-inner "><div class="field-item dataValueWrite"><div class="radioTable"><div><span class="col-3"><input validationtype="required" id="cccbtnyes" type="radio" onclick="window.parent.openGPPCc()" name="cccbtnyes" value="Yes" class="Radio" style="vertical-align: middle;"><label title=""for="cccbtnyes" class="rb_ rb_standard radioLabel">Yes</label></span><span class="col-3"><input onclick="window.parent.gppNo()"  id="cccbtnno" type="radio" name="cccbtnyes" value="No" class="Radio" style="vertical-align: middle;"><label title="" for="cccbtnno" class="rb_ rb_standard radioLabel">No</label></span></div></div></div></div></div>');
-                if (sessionStorage.getItem("messageSuccessCc") !== null) {
-                    document.getElementById('cccbtnyes').checked = true
-                } else if(sessionStorage.getItem('gppNo') !== null && sessionStorage.getItem("messageSuccessCc") === null) {
-                    document.getElementById('cccbtnno').checked = true
-                }
+        } else {
+            if(sessionStorage.getItem('autodocmnrprovider') === null) {
+                window.parent.sessionStorage.setItem('optout', 'optoutautodoc');
+                window.parent.sessionStorage.setItem("QuestionradioStatus", "OPT_OUT");
             }
         }
-    }
+    });
+
 
 
 }(jQuery, window, document));
