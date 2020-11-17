@@ -1,16 +1,11 @@
-console.log('removing reset autodoc provider info v1');
 
 (function($, window, document, undefined) {
 
     'use strict';
     // Get member sessionStorage from maestro
     var member_dataSession = JSON.parse(window.parent.sessionStorage.getItem("member_info"));
-    var houseHoldNum;
     var ezcommCommunications;
-    var pageurl = document.forms[0].elements["TaskSectionReference"].value;
-    var reset = false;
     var householdId = getAttributeValue("pyWorkPage", "MemberID");
-
 
     var activeTier1IframeId = window.parent.$('div[id^="PegaWebGadget"]').filter(
         function() {
@@ -19,38 +14,20 @@ console.log('removing reset autodoc provider info v1');
         return $(this).attr('aria-hidden') === "false";
     }).contents()[0].id;
 
-
-    function isAutodocMnrNotEmpty() {
-        if(sessionStorage.getItem('autodocmnrprovider') !== null && sessionStorage.getItem('QuestionradioStatus') !== 'OPT_IN') {
-            window.parent.sessionStorage.removeItem('autodocmnrprovider'); // autodoc
-            window.parent.sessionStorage.removeItem('messageSuccess');
-
-            if(sessionStorage.getItem('optout') !== null) {
-                sessionStorage.removeItem('optout');
-            }
-
-            console.log(sessionStorage.getItem('autodocmnrprovider'));
-        } else if(sessionStorage.getItem('autodocmnrprovider') === null && sessionStorage.getItem('QuestionradioStatus') !== 'OPT_IN') {
-            window.parent.sessionStorage.removeItem('autodocmnrprovider');
-            window.parent.sessionStorage.removeItem('messageSuccess');
-
-            if(sessionStorage.getItem('optout') !== null) {
-                sessionStorage.removeItem('optout');
-            }
-        }
-        return false;
-    }
+    var sCase = window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('title').html().trim();
+    console.log('nomar fix opt out v1');
 
     function checkIfReset(){
 
-        if(sessionStorage.getItem('autodocmnrprovider') !== null && sessionStorage.getItem('QuestionradioStatus') === 'OPT_IN') {
-            window.parent.sessionStorage.removeItem('autodocmnrprovider');
+        if(sessionStorage.getItem(sCase) !== null && sessionStorage.getItem('QuestionradioStatus') === 'OPT_IN') {
+            window.parent.sessionStorage.removeItem(sCase);
             window.parent.sessionStorage.removeItem('messageSuccess');
-            reset = true;
         }
     }
 
     if(document.forms[0].elements["TaskSectionReference"].value == "AssignPCP"){
+        sessionStorage.setItem("campaignName", "Search and Assign Provider");
+        sessionStorage.setItem('provInfoScase', sCase);
         isAutodocMnrNotEmpty();
     }
 
@@ -311,37 +288,45 @@ console.log('removing reset autodoc provider info v1');
     if (document.forms[0].elements["TaskSectionReference"].value == "Tier1CompletionDetails") {
 
         //TODO: ADD OPT_IN MESSAGE HERE..
-        if(sessionStorage.getItem("campaignName") === "ProviderInfo") {
 
-            var configuration = false;
-            var myObj = requestMetaDataMandR().plugins;
-            Object.keys(myObj).forEach(function(key) {
-                if(myObj[key].pluginId === "10" && myObj[key].name === "Autodoc") {
-                    configuration = true;
-                    console.log('config is ON');
-                } else {
-                    configuration = false;
-                }
+        var sCaseProv = window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('title').html().trim();
 
-            });
+        var configuration = false;
+        var myObj = requestMetaDataMandR().plugins;
+        Object.keys(myObj).forEach(function(key) {
+            if(myObj[key].pluginId === "10" && myObj[key].name === "Autodoc") {
+                configuration = true;
+                console.log('config is ON');
+            } else {
+                configuration = false;
+            }
 
+        });
+
+        if(sessionStorage.getItem("campaignName") === "Search and Assign Provider") {
             if(configuration){
-                if(sessionStorage.getItem('autodocmnrprovider') !== null) {
-                    providerTierNotes = sessionStorage.getItem('autodocmnrprovider');
+                if(sessionStorage.getItem(sCaseProv) !== null) {
+
+                    providerTierNotes = sessionStorage.getItem(sCaseProv);
 
                     if(sessionStorage.getItem('QuestionradioStatus') === "OPT_IN"  ) {
                         sessionStorage.removeItem('QuestionradioStatus');
                         sessionStorage.removeItem('schedprov');
                     }
 
-                } else {
-                    var tier1Comments = window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('#Comments').val();
-                    if (tier1Comments === undefined || tier1Comments === '' || !tier1Comments.contains("Opt-in: Yes") ) {
+                    if (sessionStorage.getItem('messageSuccess') !== null) {
+                        sessionStorage.removeItem('messageSuccess');
+                    }
 
-                        if(sessionStorage.getItem('optout') !== null) {
-                            providerTierNotes = "***Provider Information Email Message Opt-in: No, " + getCurrentDateTime() + "***\n"
-                                + "***Provider Information SMS Message Opt-in: No, " + getCurrentDateTime() + "***\n";
-                            sessionStorage.removeItem('QuestionradioStatus');
+                } else {
+                    if(sessionStorage.getItem('provInfoScase') === sCaseProv) {
+                        var tier1Comments = window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('#Comments').val();
+                        if (tier1Comments === undefined || tier1Comments === '' || !tier1Comments.contains("Opt-in: Yes") ) {
+                            if(sessionStorage.getItem('QuestionradioStatus') === "OPT_OUT") {
+                                providerTierNotes = "***Provider Information Email Message Opt-in: No, " + getCurrentDateTime() + "***\n"
+                                    + "***Provider Information SMS Message Opt-in: No, " + getCurrentDateTime() + "***\n";
+                                sessionStorage.removeItem('QuestionradioStatus');
+                            }
                         }
                     }
                 }
@@ -353,6 +338,9 @@ console.log('removing reset autodoc provider info v1');
             }
             window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('#Comments').val(providerTierNotes);
         }
+
+
+
     }
 
     $(document).on('DOMSubtreeModified', '#pyFlowActionHTML div ', function() {
@@ -367,40 +355,6 @@ console.log('removing reset autodoc provider info v1');
         }
     });
 
-
-    if(pageurl === "AssignPCP"){
-        sessionStorage.setItem('campaignName', 'ProviderInfo');
-        /*  $(document).on('DOMSubtreeModified', '.sectionDivStyle', function() {
-              sessionStorage.setItem('campaignName', 'ProviderInfo');
-              getHouseHoldId();
-          }); */
-
-        window.parent.document.getElementById('l1').addEventListener('click',  function(event) {
-
-            if (event.target.matches('.layout-noheader-interaction_tabs .Header_nav')) {
-
-                setTimeout(function() {
-
-                    var activeTier1IframeIds = window.parent.$('div[id^="PegaWebGadget"]').filter(
-                        function() {
-                            return this.id.match(/\d$/);
-                        }).filter(function() {
-                        return $(this).attr('aria-hidden') == "false"
-                    }).contents()[0].id;
-
-
-                    if (window.parent.$('iframe[id=' + activeTier1IframeIds + ']').contents().find("label:contains('Provider Information')").length > 0) {
-                        householdId = window.parent.$('iframe[id=' + activeTier1IframeIds + ']')[0].contentWindow.getAttributeValue("pyWorkPage", "MemberID");
-                        sessionStorage.setItem('campaignName', 'ProviderInfo');
-
-                    }
-                }, 2000)
-
-            }
-
-        }, false);
-
-    }
 
     var ezcommCore = {
         app : {
@@ -425,16 +379,15 @@ console.log('removing reset autodoc provider info v1');
     function messageEvent(msg) {
         if(msg.data) {
             var additionalAutoDoc = sessionStorage.getItem('schedprov') + "\n";
-            console.log('msg');
             sessionStorage.setItem('messageSuccess', 'success');
             var data = msg.data.replace("Preference ", "").replace("Override ", "").replace(additionalAutoDoc, "");
             var isNull = false;
-            if(window.parent.sessionStorage.getItem('autodocmnrprovider') === null) {
-                window.parent.sessionStorage.setItem('autodocmnrprovider', data + additionalAutoDoc);
+            if(window.parent.sessionStorage.getItem(sCase) === null) {
+                window.parent.sessionStorage.setItem(sCase, data + additionalAutoDoc);
                 isNull = true;
             }
             else {
-                appendToStorage('autodocmnrprovider', data, additionalAutoDoc);
+                appendToStorage(sCase, data, additionalAutoDoc);
 
             }
             return false;
@@ -488,7 +441,7 @@ console.log('removing reset autodoc provider info v1');
             }
 
         } else {
-            if(sessionStorage.getItem('autodocmnrprovider') === null) {
+            if(sessionStorage.getItem(sCase) === null) {
                 window.parent.sessionStorage.setItem('optout', 'optoutautodoc');
                 window.parent.sessionStorage.setItem("QuestionradioStatus", "OPT_OUT");
             }
