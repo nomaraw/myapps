@@ -15,7 +15,7 @@
     }).contents()[0].id;
 
     var sCase = window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('title').html().trim();
-    console.log('nomar fix opt out v1');
+    console.log('nomar fix opt out v2');
 
     function checkIfReset(){
 
@@ -28,12 +28,12 @@
     if(document.forms[0].elements["TaskSectionReference"].value == "AssignPCP"){
         sessionStorage.setItem("campaignName", "Search and Assign Provider");
         sessionStorage.setItem('provInfoScase', sCase);
-        isAutodocMnrNotEmpty();
+       // isAutodocMnrNotEmpty();
     }
 
     function launchWinMnR() {
         var appWindow = window.parent.open("/a4me/ezcomm-core-v2/", "a4meEZCommWindow", 'location=no,height=600,width=1000,scrollbars=1');
-        isAutodocMnrNotEmpty();
+       // isAutodocMnrNotEmpty();
         checkIfReset();
         var msgprov = messagesMandR()[0].msg_parameters.providers;
         var detail = '';
