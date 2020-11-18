@@ -1,79 +1,55 @@
+(function ($, window, document, undefined) {
 
-(function($, window, document, undefined) {
-
+    console.log('user story 2 nomar v1');
     'use strict';
     // Get member sessionStorage from maestro
     var member_dataSession = JSON.parse(window.parent.sessionStorage.getItem("member_info"));
+    var houseHoldNum;
     var ezcommCommunications;
-    var householdId = getAttributeValue("pyWorkPage", "MemberID");
+    var pageUrl = document.forms[0].elements["TaskSectionReference"].value;
+    var householdIdSched;
+    householdIdSched = getAttributeValue("pyWorkPage", "MemberID");
 
     var activeTier1IframeId = window.parent.$('div[id^="PegaWebGadget"]').filter(
-        function() {
+        function () {
             return this.id.match(/\d$/);
-        }).filter(function() {
+        }).filter(function () {
         return $(this).attr('aria-hidden') === "false";
     }).contents()[0].id;
 
-    var sCase = window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('title').html().trim();
-    console.log('nomar fix opt out v2');
+    var sCaseAppt = window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('title').html().trim();
 
-    function checkIfReset(){
-
-        if(sessionStorage.getItem(sCase) !== null && sessionStorage.getItem('QuestionradioStatus') === 'OPT_IN') {
-            window.parent.sessionStorage.removeItem(sCase);
-            window.parent.sessionStorage.removeItem('messageSuccess');
-        }
-    }
-
-    if(document.forms[0].elements["TaskSectionReference"].value == "AssignPCP"){
-        sessionStorage.setItem("campaignName", "Search and Assign Provider");
-        sessionStorage.setItem('provInfoScase', sCase);
-       // isAutodocMnrNotEmpty();
+    if (pageUrl == "ScheduleAppointment") {
+        sessionStorage.setItem("campaignName", "Schedule Appointment");
+        sessionStorage.setItem("schedApptScase", sCaseAppt);
     }
 
     function launchWinMnR() {
         var appWindow = window.parent.open("/a4me/ezcomm-core-v2/", "a4meEZCommWindow", 'location=no,height=600,width=1000,scrollbars=1');
-       // isAutodocMnrNotEmpty();
-        checkIfReset();
-        var msgprov = messagesMandR()[0].msg_parameters.providers;
         var detail = '';
 
-        var isconfig = false;
-        var myObj = requestMetaDataMandR().plugins;
-        Object.keys(myObj).forEach(function(key) {
-            console.log(myObj[key].pluginId); // the value of the current key.
-            if(myObj[key].pluginId === "10" && myObj[key].name === "Autodoc") {
-                isconfig = true;
-                console.log('config is ON');
-            } else {
-                isconfig = false;
-                console.log('config off');
-            }
 
+        var configappt = false;
+        var myObj = requestMetaDataMandRAppt().plugins;
+        Object.keys(myObj).forEach(function (key) {
+            if (myObj[key].pluginId === "10" && myObj[key].name === "Autodoc") {
+                configappt = true;
+                console.log('config is ON');
+            }
         });
 
-        if(messagesMandR()[0].msg_parameters.providers.length > 0) {
-            Object.keys(msgprov).forEach(function(key) {
-                detail += msgprov[key].name + "\n" + msgprov[key].address + "\n" + msgprov[key].phone + "\n" + "\n";
-            });
-            sessionStorage.setItem('schedprov', detail);
-        } else{
-            console.log('empty provider table');
-            sessionStorage.setItem('schedprov', "");
-        }
 
-        var loop = setInterval(function() {
+        var loop = setInterval(function () {
             if (appWindow.closed) {
-                if (sessionStorage.getItem('messageSuccess') === null && isconfig) {
-                    window.parent.sessionStorage.removeItem("QuestionradioStatus");
+                if (sessionStorage.getItem('messageSuccess') === null && configappt) {
+                    window.parent.sessionStorage.removeItem("QuestionRadioStatusAppt");
                     document.getElementById('ezcomm-mnr-mail-question-yes').checked = false;
-                    window.parent.sessionStorage.removeItem("autodocmnrprovider");
                 }
+
                 clearInterval(loop);
             }
         }, 1000);
     }
-
 
     function getMemberDataMandR() {
         var ezcommMandRMemObj = {};
@@ -92,14 +68,14 @@
         ezcommMandRMemObj.policyId = "0";
         ezcommMandRMemObj.encryptedFlag = false;
         ezcommMandRMemObj.additionalIdentifiers = [{
-            id: householdId,
+            id: householdIdSched,
             type: "GPSHID"
         }];
         return ezcommMandRMemObj;
     }
 
 
-    function requestMetaDataMandR() {
+    function requestMetaDataMandRAppt() {
         var requestMetaDataMandRObj = {};
         var pluginObject = [];
         var plugin = {};
@@ -123,23 +99,25 @@
         plugin.defaultCampaign = "";
         plugin.pluginId = "";
 
-        plugin2.pluginId = "10";
-        plugin2.name = "Autodoc";
+        if (pageUrl == "ScheduleAppointment") {
 
-        var msgprov = messagesMandR()[0].msg_parameters.providers;
-        var detail = '';
+            var msgprov = messagesMandR()[0].msg_parameters;
+            var detail = '';
 
-        if(messagesMandR()[0].msg_parameters.providers.length > 0) {
-            Object.keys(msgprov).forEach(function(key) {
-                detail += msgprov[key].name + "\n" + msgprov[key].address + "\n" + msgprov[key].phone + "\n" + "\n";
-            });
-            sessionStorage.setItem('schedprov', detail);
-        } else{
-            console.log('empty provider table');
-            sessionStorage.setItem('schedprov', "");
+            if (Object.keys(msgprov).length) {
+                Object.keys(msgprov).forEach(function (key) {
+                    detail = msgprov.doctor + "\n" + msgprov.location + " " + msgprov.phone + "\n" + msgprov.date + " " + msgprov.time + "\n";
+                });
+            }
         }
 
-        plugin2.params = { additionalAutoDoc: sessionStorage.getItem('schedprov') };
+        plugin2.pluginId = "10";
+        plugin2.name = "Autodoc";
+        plugin2.params = {
+            additionalAutoDoc: detail
+        };
+
+        sessionStorage.setItem('schedproviders', detail);
 
         pluginObject.push(plugin);
         pluginObject.push(plugin2);
@@ -150,67 +128,58 @@
         return requestMetaDataMandRObj;
     }
 
+
+    function callChangeProviderV2(row) {
+        var scheduleAppointment;
+        if (pageUrl == "ScheduleAppointment") {
+            scheduleAppointment = {
+                providerId: ($(row).closest('tr').find('td:eq(1) span input').length > 0 ? $(row).closest('tr').find('td:eq(1) span input').val() : $(row).closest('tr').find('td:eq(1)').text()),
+                providerName: ($(row).closest('tr').find('td:eq(2) span input').length > 0 ? $(row).closest('tr').find('td:eq(2) span input').val() : $(row).closest('tr').find('td:eq(2)').text()),
+                address: ($(row).closest('tr').find('td:eq(3) span input').length > 0 ? $(row).closest('tr').find('td:eq(3) span input').val() : $(row).closest('tr').find('td:eq(3)').text()),
+                providerPhoneNumber: ($(row).closest('tr').find('td:eq(10) span input').length > 0 ? $(row).closest('tr').find('td:eq(10) span input').val() : $(row).closest('tr').find('td:eq(10)').text()),
+                specialty: ($(row).closest('tr').find('td:eq(4) span input').length > 0 ? $(row).closest('tr').find('td:eq(4) span input').val() : $(row).closest('tr').find('td:eq(4)').text()),
+                date: $('#AppointmentDate').val(),
+                time: $('#AppointmentTime').val()
+            };
+        }
+
+        return scheduleAppointment;
+    };
+
+
     function messagesMandR() {
 
         var objs;
-        var obj1 = {};
-        var obj2 = {};
+        var objprov1 = {};
+        var objprov2 = {};
         var msg_param = {};
-        var msg_param2 = {};
         var filtersObject = [];
+        var scheduleAppointment = callChangeProviderV2($("#bodyTbl_right tr td input[type=radio]:checked"));
 
-        obj1.type = "EMAIL";
-        obj1.campaignId = 67;
-        obj1.template_name = "Provider_Info_EMAIL";
-        msg_param.firstName = member_dataSession.member_first_name;
-        msg_param.lastName = member_dataSession.member_last_name;
-        obj1.msg_parameters = msg_param;
-        obj1.msg_parameters.providers = [];
+        objprov1.type = "EMAIL";
+        objprov1.campaignId = 68;
+        objprov1.template_name = "Provider_Appt_Info_EMAIL";
 
-        obj2.type = "SMS";
-        obj2.campaignId = 67;
-        obj2.template_name = "Provider_Info_SMS";
-        msg_param.firstName = member_dataSession.member_first_name;
-        msg_param.lastName = member_dataSession.member_last_name;
-        obj2.msg_parameters = msg_param2;
-        obj2.msg_parameters.providers = [];
+        objprov2.type = "SMS";
+        objprov2.campaignId = 68;
+        objprov2.template_name = "Provider_Appt_Info_SMS";
 
-        window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('#bodyTbl_right tr:not(:first)').each(function() {
-            var provider = {};
-            provider.name = window.parent.$(this).find("td:eq(2)").find("span").html();
-            provider.address = window.parent.$(this).find("td:eq(3)").find("span").html();
-            provider.phone = window.parent.$(this).find("td:eq(10)").find("span").html();
-            if (typeof provider.name == 'undefined' ||
-                provider.name.indexOf("<input") !== -1 ||
-                provider.address.indexOf("<input") !== -1 ||
-                provider.phone.indexOf("<input") !== -1) {
-                console.error("ERROR html tag found in provider.");
+        if (pageUrl == "ScheduleAppointment") {
 
-            } else {
-                var currentProviderInfo = "";
-                for (var key2 in provider) {
-                    if (key2 !== '$$hashKey' && provider[key2].trim().length !== 0 && provider[key2]) {
-                        currentProviderInfo = currentProviderInfo + provider[key2].trim() + "\n";
-                    }
-                }
+            objs = {
+                doctor: scheduleAppointment.providerName,
+                location: scheduleAppointment.address,
+                phone: scheduleAppointment.providerPhoneNumber,
+                date: scheduleAppointment.date,
+                time: scheduleAppointment.time
+            };
+        }
 
+        objprov1.msg_parameters = objs;
+        objprov2.msg_parameters = objs;
 
-                objs = {
-                    name: provider.name.trim(),
-                    phone: provider.phone.trim(),
-                    address: provider.address.trim()
-                };
-
-
-                obj1.msg_parameters.providers.push(objs); // email
-                obj2.msg_parameters.providers.push(objs); // sms
-
-            }
-        });
-
-        filtersObject.push(obj1);
-        filtersObject.push(obj2);
-
+        filtersObject.push(objprov1);
+        filtersObject.push(objprov2);
         return filtersObject;
     }
 
@@ -227,19 +196,24 @@
         if (hr > 12) {
             hr -= 12;
             ampm = "pm";
-        } else if (hr == 12) {
+        }
+        else if (hr == 12) {
             ampm = "pm";
         }
 
-        if(hr < 10) { hr = "0" + hr; }
+        if (hr < 10) {
+            hr = "0" + hr;
+        }
 
         var date = d.getDate() < 10 ? "0" + d.getDate() : d.getDate();
         var month = d.getMonth() + 1;
-        if(month < 10) { month = "0" + month; }
+        if (month < 10) {
+            month = "0" + month;
+        }
 
         var year = d.getFullYear();
         var sec = d.getSeconds();
-        if(sec < 10) {
+        if (sec < 10) {
             sec = "0" + sec;
         }
 
@@ -248,116 +222,53 @@
     }
 
 
-    var EmailCheckRadioButtonContent = '<td class="dataValueWrite" style="height:38px;width:193px;">\
-	<div class="radioTable" >\
-	    <div>\
-	        <span class="col-3"><input name="optradio" type="radio" value="yes" id="ezcomm-mnr-mail-question-yes" class="Radio ezcomm-mnr-mail-question-button" style="vertical-align: middle;"><label class="rb_ rb_standard radioLabel">Yes</label></span>\<span class="col-3"><input name="optradio" type="radio" value="no" id="ezcomm-mnr-mail-question-no" class="ezcomm-mnr-mail-question-button" style="vertical-align: middle;"><label class="rb_ rb_standard radioLabel">No</label></span>\
-	    </div>\
-	</div>\
-	</td>';
-
-    var EmailCheckRadioButtonContentYes = '<td class="dataValueWrite" style="height:38px;width:193px;">\
-	<div class="radioTable" >\
-	    <div>\
-	        <span class="col-3"><input name="optradio" type="radio" value="yes" id="ezcomm-mnr-mail-question-yes" class="Radio ezcomm-mnr-mail-question-button" style="vertical-align: middle;" checked><label class="rb_ rb_standard radioLabel">Yes</label></span>\<span class="col-3"><input name="optradio" type="radio" value="no" id="ezcomm-mnr-mail-question-no" class="ezcomm-mnr-mail-question-button" style="vertical-align: middle;"><label class="rb_ rb_standard radioLabel">No</label></span>\
-	    </div>\
-	</div>\
-	</td>';
-
-    var EmailCheckRadioButtonContentNo = '<td class="dataValueWrite" style="height:38px;width:193px;">\
-	<div class="radioTable" >\
-	    <div>\
-	        <span class="col-3"><input name="optradio" type="radio" value="yes" id="ezcomm-mnr-mail-question-yes" class="Radio ezcomm-mnr-mail-question-button" style="vertical-align: middle;"><label class="rb_ rb_standard radioLabel">Yes</label></span>\<span class="col-3"><input name="optradio" type="radio" value="no" id="ezcomm-mnr-mail-question-no" class="ezcomm-mnr-mail-question-button" style="vertical-align: middle;" checked><label class="rb_ rb_standard radioLabel">No</label></span>\
-	    </div>\
-	</div>\
-	</td>';
-
-
-
-    var varSectionIndex = "#pyFlowActionHTML div div[class='layout layout-noheader layout-noheader-default_with_all_borders'";
-
-    if (document.forms[0].elements["TaskSectionReference"].value == "AssignPCP") {
-        if(window.parent.sessionStorage.getItem("QuestionradioStatus") == null || window.parent.sessionStorage.getItem("QuestionradioStatus") == "") {
-            if(sessionStorage.getItem('messageSuccess') === null) {
-                $(varSectionIndex).prev().prepend('<tr id="newlyAddedQuestionEmail"><td><label class="dataValueWrite a4meDiv" style="vertical-align:middle;">Does the member want to receive provider information via text or email?</label></td>' + EmailCheckRadioButtonContent + '</tr>');
-            }
-        }
-    }
-
     var providerTierNotes = '';
     if (document.forms[0].elements["TaskSectionReference"].value == "Tier1CompletionDetails") {
 
-        //TODO: ADD OPT_IN MESSAGE HERE..
+        var sCaseTier1Appt = window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('title').html().trim();
 
-        var sCaseProv = window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('title').html().trim();
-
+        //TODO: ADD OPT_IN MESSAGE HERE..s
         var configuration = false;
-        var myObj = requestMetaDataMandR().plugins;
-        Object.keys(myObj).forEach(function(key) {
-            if(myObj[key].pluginId === "10" && myObj[key].name === "Autodoc") {
+        var myObj = requestMetaDataMandRAppt().plugins;
+        Object.keys(myObj).forEach(function (key) {
+            console.log(myObj[key].pluginId); // the value of the current key.
+            if (myObj[key].pluginId === "10" && myObj[key].name === "Autodoc") {
                 configuration = true;
                 console.log('config is ON');
-            } else {
-                configuration = false;
             }
-
         });
 
-        if(sessionStorage.getItem("campaignName") === "Search and Assign Provider") {
-            if(configuration){
-                if(sessionStorage.getItem(sCaseProv) !== null) {
+        if(sessionStorage.getItem("campaignName") === "Schedule Appointment") {
+            if (configuration) {
+                if(sessionStorage.getItem("schedApptScase") === sCaseTier1Appt) {
+                    if (sessionStorage.getItem(sCaseTier1Appt) !== null) {
 
-                    providerTierNotes = sessionStorage.getItem(sCaseProv);
+                        providerTierNotes = sessionStorage.getItem(sCaseTier1Appt);
 
-                    if(sessionStorage.getItem('QuestionradioStatus') === "OPT_IN"  ) {
-                        sessionStorage.removeItem('QuestionradioStatus');
-                        sessionStorage.removeItem('schedprov');
-                    }
-
-                    if (sessionStorage.getItem('messageSuccess') !== null) {
-                        sessionStorage.removeItem('messageSuccess');
-                    }
-
-                } else {
-                    if(sessionStorage.getItem('provInfoScase') === sCaseProv) {
-                        var tier1Comments = window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('#Comments').val();
-                        if (tier1Comments === undefined || tier1Comments === '' || !tier1Comments.contains("Opt-in: Yes") ) {
-                            if(sessionStorage.getItem('QuestionradioStatus') === "OPT_OUT") {
-                                providerTierNotes = "***Provider Information Email Message Opt-in: No, " + getCurrentDateTime() + "***\n"
-                                    + "***Provider Information SMS Message Opt-in: No, " + getCurrentDateTime() + "***\n";
-                                sessionStorage.removeItem('QuestionradioStatus');
-                            }
+                        if (sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_IN") {
+                            sessionStorage.removeItem('QuestionRadioStatusAppt');
+                            sessionStorage.removeItem('schedproviders');
+                        }
+                    } else {
+                        if (sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_OUT") {
+                            providerTierNotes = "***Appointment Schedule Email Message Opt-in: No, " + getCurrentDateTime() + "***\n" +
+                                "***Appointment Schedule SMS Message Opt-in: No, " + getCurrentDateTime() + "***\n";
+                            sessionStorage.removeItem('QuestionRadioStatusAppt');
                         }
                     }
                 }
-            } else {
-                if(sessionStorage.getItem('QuestionradioStatus') === "OPT_IN" || sessionStorage.getItem('QuestionradioStatus') === "OPT_OUT") {
-                    sessionStorage.removeItem('QuestionradioStatus');
-                    sessionStorage.removeItem('schedprov');
+            }  else {
+                if(sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_IN" || sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_OUT") {
+                    sessionStorage.removeItem('QuestionRadioStatusAppt');
+                    sessionStorage.removeItem('schedproviders');
                 }
             }
             window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('#Comments').val(providerTierNotes);
         }
-
-
-
     }
 
-    $(document).on('DOMSubtreeModified', '#pyFlowActionHTML div ', function() {
-        if ($("#newlyAddedQuestionEmail").length == 0 && document.forms[0].elements["TaskSectionReference"].value == "AssignPCP") {
-            if (window.parent.sessionStorage.getItem("QuestionradioStatus") == "OPT_IN"){
-                $(varSectionIndex).prev().prepend('<tr id="newlyAddedQuestionEmail"><td><label class="dataValueWrite a4meDiv" style="vertical-align:middle;">Does the member want to receive provider information via text or email?</label></td>' + EmailCheckRadioButtonContentYes + '</tr>');
-            }else if  (window.parent.sessionStorage.getItem("QuestionradioStatus") == "OPT_OUT") {
-                $(varSectionIndex).prev().prepend('<tr id="newlyAddedQuestionEmail"><td><label class="dataValueWrite a4meDiv" style="vertical-align:middle;">Does the member want to receive provider information via text or email?</label></td>' + EmailCheckRadioButtonContentNo + '</tr>');
-            }else {
-                $(varSectionIndex).prev().prepend('<tr id="newlyAddedQuestionEmail"><td><label class="dataValueWrite a4meDiv" style="vertical-align:middle;">Does the member want to receive provider information via text or email?</label></td>' + EmailCheckRadioButtonContent + '</tr>');
-            }
-        }
-    });
-
-
     var ezcommCore = {
-        app : {
+        app: {
 
             appWindow: null,
 
@@ -370,24 +281,26 @@
                 launchWinMnR();
             },
 
-            get: function() {
+            get: function () {
                 return this.appWindow;
             }
         }
     };
 
-    function messageEvent(msg) {
+
+    function messageEventAppt(msg) {
         if(msg.data) {
-            var additionalAutoDoc = sessionStorage.getItem('schedprov') + "\n";
+            var additionalAutoDoc = sessionStorage.getItem('schedproviders') + "\n";
+            console.log('msg');
             sessionStorage.setItem('messageSuccess', 'success');
             var data = msg.data.replace("Preference ", "").replace("Override ", "").replace(additionalAutoDoc, "");
             var isNull = false;
-            if(window.parent.sessionStorage.getItem(sCase) === null) {
-                window.parent.sessionStorage.setItem(sCase, data + additionalAutoDoc);
+            if(window.parent.sessionStorage.getItem(sCaseAppt) === null) {
+                window.parent.sessionStorage.setItem(sCaseAppt, data + additionalAutoDoc);
                 isNull = true;
             }
             else {
-                appendToStorage(sCase, data, additionalAutoDoc);
+                appendToStorage(sCaseAppt, data, additionalAutoDoc);
 
             }
             return false;
@@ -410,44 +323,100 @@
     }
 
 
-    window.parent.$(document).on('change', '.ezcomm-mnr-mail-question-button', function() {
-        if (this.value == "yes") {
+    window.parent.$(document).on('change', '.ezcomm-mnr-mail-question-buttonappt', function () {
+        if(window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find(".subheaderFieldSetStyle").length > 0) {
+            if (this.value == "yes") {
 
-            window.parent.removeEventListener("message", messageEvent, false);      // Succeeds
+                window.parent.removeEventListener("message", messageEventAppt, false);      // Succeeds
 
-            window.parent.sessionStorage.setItem("QuestionradioStatus", "OPT_IN");
+                window.parent.sessionStorage.setItem("QuestionRadioStatusAppt", "OPT_IN");
 
-            ezcommCommunications = {
-                config: {
-                    data: {
-                        member: {},
-                        request_metadata: {},
-                        message: messagesMandR()
+                ezcommCommunications = {
+                    config: {
+                        data: {
+                            member: {},
+                            request_metadata: {},
+                            message: messagesMandR()
 
+                        }
                     }
+                };
+
+                ezcommCommunications.config.data.member = getMemberDataMandR();
+                ezcommCommunications.config.data.request_metadata = requestMetaDataMandRAppt();
+                ezcommCommunications.config.data.message;
+                ezcommCore.app.open(ezcommCommunications.config);
+
+
+                var iframe = window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents();
+
+                if(iframe) {
+                    window.parent.addEventListener("message", messageEventAppt, false);
                 }
-            };
-
-            ezcommCommunications.config.data.member = getMemberDataMandR();
-            ezcommCommunications.config.data.request_metadata = requestMetaDataMandR();
-            ezcommCommunications.config.data.message;
-            ezcommCore.app.open(ezcommCommunications.config);
-
-
-            var iframe = window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents();
-
-            if(iframe) {
-                window.parent.addEventListener("message", messageEvent, false);
             }
-
-        } else {
-            if(sessionStorage.getItem(sCase) === null) {
-                window.parent.sessionStorage.setItem('optout', 'optoutautodoc');
-                window.parent.sessionStorage.setItem("QuestionradioStatus", "OPT_OUT");
+            else {
+                if (sessionStorage.getItem(sCaseAppt) === null) {
+                    window.parent.sessionStorage.setItem('optoutappt', 'optoutautodoc');
+                    window.parent.sessionStorage.setItem("QuestionRadioStatusAppt", "OPT_OUT");
+                }
             }
         }
     });
 
 
+    var EmailCheckRadioButtonContentYes = '<span class="dataValueWrite" style="height:38px;width:193px;">\
+            <span class="col-3"><input name="optradio" type="radio" value="yes" id="ezcomm-mnr-mail-question-yes" class="Radio ezcomm-mnr-mail-question-buttonappt" style="vertical-align: middle;" checked><label class="rb_ rb_standard radioLabel">Yes</label></span>\<span class="col-3"><input name="optradio" type="radio" value="no" id="ezcomm-mnr-mail-question-no" class="ezcomm-mnr-mail-question-buttonappt" style="vertical-align: middle;"><label class="rb_ rb_standard radioLabel">No</label></span>\
+    <span/>';
+
+    var EmailCheckRadioButtonContentNo = '<span class="dataValueWrite" style="height:38px;width:193px;">\
+            <span class="col-3"><input name="optradio" type="radio" value="yes" id="ezcomm-mnr-mail-question-yes" class="Radio ezcomm-mnr-mail-question-buttonappt" style="vertical-align: middle;"><label class="rb_ rb_standard radioLabel">Yes</label></span>\<span class="col-3"><input name="optradio" type="radio" value="no" id="ezcomm-mnr-mail-question-no" class="ezcomm-mnr-mail-question-buttonappt" style="vertical-align: middle;" checked><label class="rb_ rb_standard radioLabel">No</label></span>\
+    <span/>';
+
+    var EmailCheckRadioButtonContent = '<span class="dataValueWrite" style="height:38px;width:193px;">\
+            <span class="col-3"><input name="optradio" type="radio" value="yes" id="ezcomm-mnr-mail-question-yes" class="Radio ezcomm-mnr-mail-question-buttonappt" style="vertical-align: middle;"><label class="rb_ rb_standard radioLabel">Yes</label></span>\<span class="col-3"><input name="optradio" type="radio" value="no" id="ezcomm-mnr-mail-question-no" class="ezcomm-mnr-mail-question-buttonappt" style="vertical-align: middle;"><label class="rb_ rb_standard radioLabel">No</label></span>\
+    <span/>';
+
+
+    $(document).on('DOMSubtreeModified', '#pyFlowActionHTML div ', function () {
+
+        if ($('#pyWorkPageIsProviderScheduledYes').prop('checked')) {
+            if ($("#newlyAddedQuestionEmail").length == 0) {
+
+                if(window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find(".subheaderFieldSetStyle").length > 0) {
+
+                    if (window.parent.sessionStorage.getItem("QuestionRadioStatusAppt") == "OPT_IN") {
+                        $('.subheaderFieldSetStyle').append('<span id="newlyAddedQuestionEmail"><td><label class="dataValueWrite a4meDiv" style="vertical-align:middle;">Does the member want to receive provider information via text or email?</label></td>' + EmailCheckRadioButtonContentYes + '</span>');
+                    }
+                    else if (window.parent.sessionStorage.getItem("QuestionRadioStatusAppt") == "OPT_OUT") {
+                        $('.subheaderFieldSetStyle').append('<span id="newlyAddedQuestionEmail"><td><label class="dataValueWrite a4meDiv" style="vertical-align:middle;">Does the member want to receive provider information via text or email?</label></td>' + EmailCheckRadioButtonContentNo + '</span>');
+                    }
+                    else {
+                        $('.subheaderFieldSetStyle').append('<span id="newlyAddedQuestionEmail"><td><label class="dataValueWrite a4meDiv" style="vertical-align:middle;">Does the member want to receive provider information via text or email?</label></td>' + EmailCheckRadioButtonContent + '</span>');
+                    }
+
+                }
+            }
+        }
+    });
+
+
+    if ($('#pyWorkPageIsProviderScheduledYes').prop('checked')) {
+        if ($("#newlyAddedQuestionEmail").length == 0) {
+
+            if(window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find(".subheaderFieldSetStyle").length > 0) {
+
+                if (window.parent.sessionStorage.getItem("QuestionRadioStatusAppt") == "OPT_IN") {
+                    $('.subheaderFieldSetStyle').append('<span id="newlyAddedQuestionEmail"><td><label class="dataValueWrite a4meDiv" style="vertical-align:middle;">Does the member want to receive provider information via text or email?</label></td>' + EmailCheckRadioButtonContentYes + '</span>');
+                }
+                else if (window.parent.sessionStorage.getItem("QuestionRadioStatusAppt") == "OPT_OUT") {
+                    $('.subheaderFieldSetStyle').append('<span id="newlyAddedQuestionEmail"><td><label class="dataValueWrite a4meDiv" style="vertical-align:middle;">Does the member want to receive provider information via text or email?</label></td>' + EmailCheckRadioButtonContentNo + '</span>');
+                }
+                else {
+                    $('.subheaderFieldSetStyle').append('<span id="newlyAddedQuestionEmail"><td><label class="dataValueWrite a4meDiv" style="vertical-align:middle;">Does the member want to receive provider information via text or email?</label></td>' + EmailCheckRadioButtonContent + '</span>');
+                }
+
+            }
+        }
+    }
 
 }(jQuery, window, document));
