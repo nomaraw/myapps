@@ -1,6 +1,7 @@
 (function ($, window, document, undefined) {
 
-    console.log('user story 2 nomar v1');
+    console.log('user story 2 nomar v2');
+
     'use strict';
     // Get member sessionStorage from maestro
     var member_dataSession = JSON.parse(window.parent.sessionStorage.getItem("member_info"));
@@ -17,7 +18,7 @@
         return $(this).attr('aria-hidden') === "false";
     }).contents()[0].id;
 
-    var sCaseAppt = window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('title').html().trim();
+    var sCaseAppt = window.parent.$("label:contains('Interaction ID:')").text().split(":")[1].trim() + ' ' + window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('title').html().trim();
 
     if (pageUrl == "ScheduleAppointment") {
         sessionStorage.setItem("campaignName", "Schedule Appointment");
@@ -225,7 +226,8 @@
     var providerTierNotes = '';
     if (document.forms[0].elements["TaskSectionReference"].value == "Tier1CompletionDetails") {
 
-        var sCaseTier1Appt = window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('title').html().trim();
+        var sCaseTier1Appt = window.parent.$("label:contains('Interaction ID:')").text().split(":")[1].trim() + ' ' + window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('title').html().trim();
+
 
         //TODO: ADD OPT_IN MESSAGE HERE..s
         var configuration = false;
