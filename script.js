@@ -1,6 +1,6 @@
 (function ($, window, document, undefined) {
 
-    console.log('user story 2 nomar v3');
+    console.log('user story 2 nomar v4');
 
     'use strict';
     // Get member sessionStorage from maestro
@@ -243,7 +243,7 @@
             }
         });
 
-        if(sessionStorage.getItem("campaignName") === "Schedule Appointment") {
+      //  if(sessionStorage.getItem("campaignName") === "Schedule Appointment") {
             if (configuration) {
                 if(sessionStorage.getItem("schedApptScase") === sCaseTier1Appt) {
                     if (sessionStorage.getItem(sCaseTier1Appt) !== null) {
@@ -269,7 +269,7 @@
                 }
             }
             window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('#Comments').val(providerTierNotes);
-        }
+      //  }
     }
 
     var ezcommCore = {
