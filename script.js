@@ -1,6 +1,6 @@
 (function ($, window, document, undefined) {
 
-    console.log('user story 2 nomar v4');
+    console.log('user story 2 nomar v5');
 
     'use strict';
     // Get member sessionStorage from maestro
@@ -22,8 +22,6 @@
         var sCase = window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('title').html().trim();
         var interaction = window.parent.$("label:contains('Interaction ID:')").text().split(":")[1].trim();
         scaseinteraction = interaction + " " + sCase;
-        console.log('scaseinter appt sched ' + scaseinteraction);
-        sessionStorage.setItem("campaignName", "Schedule Appointment");
         sessionStorage.setItem("schedApptScase", scaseinteraction);
     }
 
@@ -229,7 +227,11 @@
     var providerTierNotes = '';
     if (document.forms[0].elements["TaskSectionReference"].value == "Tier1CompletionDetails") {
 
-        var sCaseTier1Appt = window.parent.$("label:contains('Interaction ID:')").text().split(":")[1].trim() + ' ' + window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('title').html().trim();
+
+        var sCaseAppt = window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('title').html().trim();
+        var interactiontier1 =  window.parent.$("label:contains('Interaction ID:')").text().split(":")[1].trim();
+        var sCaseTier1Appt = interactiontier1 + " " + sCaseAppt;
+
 
 
         //TODO: ADD OPT_IN MESSAGE HERE..s
@@ -243,7 +245,6 @@
             }
         });
 
-      //  if(sessionStorage.getItem("campaignName") === "Schedule Appointment") {
             if (configuration) {
                 if(sessionStorage.getItem("schedApptScase") === sCaseTier1Appt) {
                     if (sessionStorage.getItem(sCaseTier1Appt) !== null) {
@@ -253,6 +254,10 @@
                         if (sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_IN") {
                             sessionStorage.removeItem('QuestionRadioStatusAppt');
                             sessionStorage.removeItem('schedproviders');
+                        }
+
+                        if (sessionStorage.getItem('messageSuccess') !== null) {
+                            sessionStorage.removeItem('messageSuccess');
                         }
                     } else {
                         if (sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_OUT") {
@@ -269,7 +274,6 @@
                 }
             }
             window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('#Comments').val(providerTierNotes);
-      //  }
     }
 
     var ezcommCore = {
