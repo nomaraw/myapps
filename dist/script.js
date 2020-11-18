@@ -1,15 +1,14 @@
 (function ($, window, document, undefined) {
 
-    console.log('user story 2 nomar v2');
+    console.log('user story 2 nomar v3');
 
     'use strict';
     // Get member sessionStorage from maestro
     var member_dataSession = JSON.parse(window.parent.sessionStorage.getItem("member_info"));
-    var houseHoldNum;
     var ezcommCommunications;
     var pageUrl = document.forms[0].elements["TaskSectionReference"].value;
-    var householdIdSched;
-    householdIdSched = getAttributeValue("pyWorkPage", "MemberID");
+    var householdIdSched = getAttributeValue("pyWorkPage", "MemberID");
+    var scaseinteraction;
 
     var activeTier1IframeId = window.parent.$('div[id^="PegaWebGadget"]').filter(
         function () {
@@ -18,12 +17,16 @@
         return $(this).attr('aria-hidden') === "false";
     }).contents()[0].id;
 
-    var sCaseAppt = window.parent.$("label:contains('Interaction ID:')").text().split(":")[1].trim() + ' ' + window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('title').html().trim();
 
-    if (pageUrl == "ScheduleAppointment") {
+    if(document.forms[0].elements["TaskSectionReference"].value == "ScheduleAppointment"){
+        var sCase = window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('title').html().trim();
+        var interaction = window.parent.$("label:contains('Interaction ID:')").text().split(":")[1].trim();
+        scaseinteraction = interaction + " " + sCase;
+        console.log('scaseinter appt sched ' + scaseinteraction);
         sessionStorage.setItem("campaignName", "Schedule Appointment");
-        sessionStorage.setItem("schedApptScase", sCaseAppt);
+        sessionStorage.setItem("schedApptScase", scaseinteraction);
     }
+
 
     function launchWinMnR() {
         var appWindow = window.parent.open("/a4me/ezcomm-core-v2/", "a4meEZCommWindow", 'location=no,height=600,width=1000,scrollbars=1');
@@ -297,12 +300,12 @@
             sessionStorage.setItem('messageSuccess', 'success');
             var data = msg.data.replace("Preference ", "").replace("Override ", "").replace(additionalAutoDoc, "");
             var isNull = false;
-            if(window.parent.sessionStorage.getItem(sCaseAppt) === null) {
-                window.parent.sessionStorage.setItem(sCaseAppt, data + additionalAutoDoc);
+            if(window.parent.sessionStorage.getItem(scaseinteraction) === null) {
+                window.parent.sessionStorage.setItem(scaseinteraction, data + additionalAutoDoc);
                 isNull = true;
             }
             else {
-                appendToStorage(sCaseAppt, data, additionalAutoDoc);
+                appendToStorage(scaseinteraction, data, additionalAutoDoc);
 
             }
             return false;
@@ -357,8 +360,7 @@
                 }
             }
             else {
-                if (sessionStorage.getItem(sCaseAppt) === null) {
-                    window.parent.sessionStorage.setItem('optoutappt', 'optoutautodoc');
+                if (sessionStorage.getItem(scaseinteraction) === null) {
                     window.parent.sessionStorage.setItem("QuestionRadioStatusAppt", "OPT_OUT");
                 }
             }
