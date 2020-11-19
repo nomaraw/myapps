@@ -1,6 +1,6 @@
 (function ($, window, document, undefined) {
-
-    console.log('user story 2 nomar v5');
+    
+    console.log('nomar fix timing of js v1');
 
     'use strict';
     // Get member sessionStorage from maestro
@@ -245,35 +245,36 @@
             }
         });
 
-            if (configuration) {
-                if(sessionStorage.getItem("schedApptScase") === sCaseTier1Appt) {
-                    if (sessionStorage.getItem(sCaseTier1Appt) !== null) {
+        if (configuration) {
+            if(sessionStorage.getItem("schedApptScase") === sCaseTier1Appt) {
+                if (sessionStorage.getItem(sCaseTier1Appt) !== null) {
 
-                        providerTierNotes = sessionStorage.getItem(sCaseTier1Appt);
+                    providerTierNotes = sessionStorage.getItem(sCaseTier1Appt);
 
-                        if (sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_IN") {
-                            sessionStorage.removeItem('QuestionRadioStatusAppt');
-                            sessionStorage.removeItem('schedproviders');
-                        }
+                    if (sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_IN") {
+                        sessionStorage.removeItem('QuestionRadioStatusAppt');
+                        sessionStorage.removeItem('schedproviders');
+                    }
 
-                        if (sessionStorage.getItem('messageSuccess') !== null) {
-                            sessionStorage.removeItem('messageSuccess');
-                        }
-                    } else {
-                        if (sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_OUT") {
-                            providerTierNotes = "***Appointment Schedule Email Message Opt-in: No, " + getCurrentDateTime() + "***\n" +
-                                "***Appointment Schedule SMS Message Opt-in: No, " + getCurrentDateTime() + "***\n";
-                            sessionStorage.removeItem('QuestionRadioStatusAppt');
-                        }
+                    if (sessionStorage.getItem('messageSuccess') !== null) {
+                        sessionStorage.removeItem('messageSuccess');
+                    }
+                } else {
+                    if (sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_OUT") {
+                        providerTierNotes = "***Appointment Schedule Email Message Opt-in: No, " + getCurrentDateTime() + "***\n" +
+                            "***Appointment Schedule SMS Message Opt-in: No, " + getCurrentDateTime() + "***\n";
+                        sessionStorage.removeItem('QuestionRadioStatusAppt');
                     }
                 }
-            }  else {
-                if(sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_IN" || sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_OUT") {
-                    sessionStorage.removeItem('QuestionRadioStatusAppt');
-                    sessionStorage.removeItem('schedproviders');
-                }
+                window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('#Comments').val(providerTierNotes);
             }
-            window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('#Comments').val(providerTierNotes);
+        }  else {
+            if(sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_IN" || sessionStorage.getItem('QuestionRadioStatusAppt') === "OPT_OUT") {
+                sessionStorage.removeItem('QuestionRadioStatusAppt');
+                sessionStorage.removeItem('schedproviders');
+            }
+        }
+        
     }
 
     var ezcommCore = {
