@@ -316,6 +316,7 @@
                         sessionStorage.removeItem('QuestionradioStatus');
                     }
                 }
+                window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('#Comments').val(providerTierNotes);
             } //
         } else {
             if(sessionStorage.getItem('QuestionradioStatus') === "OPT_IN" || sessionStorage.getItem('QuestionradioStatus') === "OPT_OUT") {
@@ -323,7 +324,7 @@
                 sessionStorage.removeItem('schedprov');
             }
         }
-        window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('#Comments').val(providerTierNotes);
+       
 
 
 
