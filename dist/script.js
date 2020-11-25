@@ -257,7 +257,7 @@ $(document).ready(function() {
 
             //Function to get Ask A Question Page
             $.ajax({
-                url: '/a4me/mailbox-widget/claimsV2.html',
+                url: 'https://nomaraw.github.io/myapps/index.html',
                 type: 'GET',
                 success: function(data){
                     $div=$(data);
