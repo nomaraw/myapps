@@ -26,19 +26,16 @@
         return $(this).attr('aria-hidden') === "false";
     }).contents()[0].id;
 
-    if (pageUrl == "UHG-MedRet-IIM-Work-ReviewRxBenefits" ||
-        pageUrl == "EnterRequestDetails")
-    {
         console.log('medret or enterrequest', pageUrl);
         var sCase = window.parent.$('iframe[id=' + activeTier1IframeId + ']').contents().find('title').html().trim();
         var interaction = window.parent.$("label:contains('Interaction ID:')").text().split(":")[1].trim();
         scaseinteraction = interaction + " " + sCase;
 
         if(getScaseIntent(scaseinteraction, "Review Rx Benefits")) {
+            console.log('this is review rx benefit surely');
             sessionStorage.setItem("revRxBenScase", scaseinteraction);
             sessionStorage.setItem("campaignName", "Review Rx Benefits");
          }
-    }
 
     var isAutodocEnabled = function() {
         var configuration = false;
